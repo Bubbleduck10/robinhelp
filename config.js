@@ -27,6 +27,20 @@ const CONFIG = {
   // Rollup facts, used for the honest "in transit" copy.
   challengePeriodDays: 6.36,
 
+  // ---- the project's own token ----
+  // Launched separately from AD4c, not through the launchpad: its fees are the
+  // project's, not a charity's. Left empty until it exists — the panel then says
+  // so rather than showing a chart of nothing.
+  mainToken: {
+    symbol: "RH",
+    address: "",           // <-- paste the token address at launch
+    launched: false,
+  },
+
+  // A campaign donates roughly this share of its trading volume: pons charges
+  // 1% and keeps 30% of that, so the creator share is 0.7%. We take none of it.
+  donationShareOfVolume: 0.007,
+
   // ---- the five charities ----
   // beneficiary = the L1 forwarder holding this charity's donate.gg configId.
   // Fill in as each forwarder is deployed and test-donated.
