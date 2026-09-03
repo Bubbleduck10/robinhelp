@@ -20,14 +20,34 @@
   };
 
   /* ---------------- plumbing ---------------- */
-  const call = async (url, method, params) => {
-    const r = await fetch(url, {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-    });
-    const j = await r.json();
-    if (j.error) throw new Error(j.error.message);
-    return j.result;
+  /* The RPC is load balanced, and some nodes in the pool answer with a
+     duplicated `Access-Control-Allow-Origin: *,*`, which browsers reject
+     outright. It is intermittent — the same request succeeds on the next
+     connection — so a transport failure is retried rather than surfaced. A
+     JSON-RPC error is not retried: that is the node answering, and asking a
+     second time gets the same answer.
+
+     Nothing here retries on a timeout budget, so a genuinely dead endpoint
+     still fails in well under a second. */
+  const call = async (url, method, params, tries = 3) => {
+    let last;
+    for (let i = 0; i < tries; i++) {
+      let r;
+      try {
+        r = await fetch(url, {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        });
+      } catch (e) {                    // CORS or network: try another node
+        last = e;
+        if (i < tries - 1) await new Promise((s) => setTimeout(s, 120 * (i + 1)));
+        continue;
+      }
+      const j = await r.json();
+      if (j.error) throw new Error(j.error.message);
+      return j.result;
+    }
+    throw last;
   };
   const rpc = (m, p) => call(CONFIG.rpc, m, p);
   const ethCall = (to, data) => rpc("eth_call", [{ to, data }, "latest"]);

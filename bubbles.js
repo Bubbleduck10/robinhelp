@@ -16,10 +16,10 @@
   let w = 0, h = 0, dpr = 1, bubbles = [], raf = null;
 
   // Density scales with area, so a phone doesn't render a desktop's worth.
-  const targetCount = () => Math.round(Math.min(46, Math.max(14, (w * h) / 42000)));
+  const targetCount = () => Math.round(Math.min(60, Math.max(18, (w * h) / 32000)));
 
   const make = (seeded) => {
-    const r = 3 + Math.pow(Math.random(), 2.1) * 32;   // biased small, a few large
+    const r = 4 + Math.pow(Math.random(), 1.9) * 40;   // biased small, a few large
     return {
       x: Math.random() * w,
       // Seeded bubbles start scattered up the screen; later ones enter from below.
@@ -30,7 +30,7 @@
       drift: (Math.random() - 0.5) * 7,
       phase: Math.random() * Math.PI * 2,
       wobble: 0.25 + Math.random() * 0.7,
-      alpha: 0.05 + Math.random() * 0.16,
+      alpha: 0.1 + Math.random() * 0.3,
     };
   };
 
@@ -55,7 +55,7 @@
       b.x - b.r * 0.35, b.y - b.r * 0.4, b.r * 0.05,
       b.x, b.y, b.r);
     g.addColorStop(0, `rgba(120,255,150,${b.alpha * 0.55})`);
-    g.addColorStop(0.55, `rgba(0,200,5,${b.alpha * 0.13})`);
+    g.addColorStop(0.55, `rgba(0,200,5,${b.alpha * 0.22})`);
     g.addColorStop(1, `rgba(0,200,5,0)`);
     ctx.fillStyle = g;
     ctx.fill();
