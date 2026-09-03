@@ -37,8 +37,13 @@ a { color: var(--accent); }
   filter: drop-shadow(0 0 7px rgba(0,200,5,.45)); }
 .chip { font-family: var(--mono); font-size: .68rem; letter-spacing: .04em; color: var(--dim);
   border: 1px solid var(--line); border-radius: 100px; padding: 3px 10px; white-space: nowrap; }
-.nav { margin-left: auto; display: flex; align-items: center; gap: 22px; }
-.nav a { color: var(--body); text-decoration: none; font-size: .92rem; font-weight: 500; }
+.nav { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+/* Without this, "How it works" breaks across two lines and shoves the bar
+   out of alignment once there are enough items in it. */
+.nav a { color: var(--body); text-decoration: none; font-size: .92rem; font-weight: 500;
+  white-space: nowrap; }
+/* Drop the least load-bearing links before the bar starts wrapping. */
+@media (max-width: 1000px) { .nav a[href$="#limits"], .nav a[href$="#how"] { display: none; } }
 .nav a:hover { color: var(--ink); }
 @media (max-width: 760px) { .nav a:not(.btn) { display: none; } }
 

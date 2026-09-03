@@ -152,8 +152,16 @@
     const list = $("campaign-list");
     let n = 0;
     try { n = Number(big(await ethCall(CONFIG.factory, SEL.campaignCount))); }
-    catch { list.innerHTML = '<p class="empty">Chain unreachable — could not read campaigns.</p>'; return; }
-    if (!n) { $("s-campaigns").textContent = 0; return; }
+    catch {
+      list.innerHTML = '<p class="empty">Chain unreachable — could not read campaigns.</p>';
+      if ($("campaign-src")) $("campaign-src").textContent = "chain unreachable";
+      return;
+    }
+    if (!n) {
+      $("s-campaigns").textContent = 0;
+      if ($("campaign-src")) $("campaign-src").textContent = "nothing launched yet";
+      return;
+    }
 
     // Hidden campaigns still exist on chain; they are only left off this list.
     const hidden = (CONFIG.hiddenCampaigns || []).map((a) => a.toLowerCase());
@@ -186,6 +194,10 @@
     }
     // The stat counts what is listed, so it can never disagree with the cards.
     $("s-campaigns").textContent = shown;
+    const src = $("campaign-src");
+    if (src) src.textContent = shown
+      ? `${shown} campaign${shown > 1 ? "s" : ""} on chain`
+      : "nothing launched yet";
     if (!list.children.length) {
       list.innerHTML = shown
         ? `<p class="empty">${shown} campaign${shown > 1 ? "s" : ""} on chain, but none could be read.</p>`

@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
@@ -27,6 +27,7 @@
     <span class="chip" id="chain-chip"><i class="pulse"></i>Robinhood Chain</span>
     <nav class="nav">
       <a href="#token">$HAND</a>
+      <a href="#campaigns">Campaigns</a>
       <a href="#ledger">Donations</a>
       <a href="#how">How it works</a>
       <a href="#limits">Limits</a>
@@ -223,7 +224,15 @@
 
 <section class="panel" id="campaigns">
   <div class="wrap">
-    <h2>Campaigns</h2>
+    <div class="sec-head">
+      <div>
+        <h2>Every campaign</h2>
+        <p class="sub tight">Every coin launched through Helping Hand, read from the launchpad
+        contract on each load. Each one has its own vault, and each vault's charity was fixed the
+        moment it deployed.</p>
+      </div>
+      <span class="chip" id="campaign-src">reading chain…</span>
+    </div>
     <div id="campaign-list" class="cards">
       <p class="empty">No campaigns yet. The first one launched will appear here, read live from chain.</p>
     </div>
@@ -337,7 +346,7 @@
 
 <script src="bubbles.js?v=2" defer></script>
 <script src="config.js?v=14"></script>
-<script src="app.js?v=19"></script>
+<script src="app.js?v=20"></script>
 <script src="launch.js?v=1"></script>
 </body>
 </html>
