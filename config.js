@@ -42,9 +42,11 @@ const CONFIG = {
   // promoted can only be filtered here — it still exists on chain, and anyone
   // reading the factory directly will still find it. Kept as an explicit,
   // visible list rather than a silent deletion.
-  hiddenCampaigns: [
-    "0xD61b931848642fE1f4E9772890a918988437533b",  // TEST, superseded deploy
-  ],
+  // Empty on purpose: the Campaigns tab shows everything the launchpad has
+  // deployed. Listing a campaign is not an endorsement of it — anyone can
+  // launch one, and hiding the ones we did not like would make the list a
+  // curated feed rather than a reading of the contract.
+  hiddenCampaigns: [],
 
   // A campaign donates roughly this share of its trading volume: pons charges
   // 1% and keeps 30% of that, so the creator share is 0.7%. We take none of it.
