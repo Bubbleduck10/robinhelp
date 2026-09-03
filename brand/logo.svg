@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Helping Hand: an open hand holding a heart up.
+       An earlier attempt used a cupped bowl instead of fingers and read as a
+       smiley face — heart for a nose, cup for a mouth. Distinct fingers are
+       what make it a hand. -->
+  <defs>
+    <radialGradient id="bgglow" cx="50%" cy="42%" r="62%">
+      <stop offset="0%"   stop-color="#0a2b0d"/>
+      <stop offset="55%"  stop-color="#06120a"/>
+      <stop offset="100%" stop-color="#050506"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+    <linearGradient id="jade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#4bff62"/>
+      <stop offset="100%" stop-color="#00b004"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1000" height="1000" rx="224" fill="url(#bgglow)"/>
+
+  <!-- glow pass, same shapes, blurred underneath so the mark reads as lit -->
+  <g transform="translate(38,0)" filter="url(#soft)" opacity=".5" fill="#00c805">
+    <rect x="322" y="455" width="78" height="200" rx="39"/>
+    <rect x="412" y="422" width="78" height="233" rx="39"/>
+    <rect x="502" y="432" width="78" height="223" rx="39"/>
+    <rect x="592" y="470" width="78" height="185" rx="39"/>
+    <rect x="168" y="636" width="205" height="88" rx="44" transform="rotate(-22 270 680)"/>
+    <rect x="308" y="598" width="374" height="250" rx="112"/>
+    <path transform="translate(315.2,119) scale(3.095)"
+          d="M50 88C25 70 8 52 8 34C8 20 19 10 32 10C41 10 48 15 50 20C52 15 59 10 68 10C81 10 92 20 92 34C92 52 75 70 50 88Z"/>
+  </g>
+
+  <g transform="translate(38,0)" fill="url(#jade)">
+    <!-- four fingers, fanned, then the thumb, then the palm over their base -->
+    <rect x="322" y="455" width="78" height="200" rx="39"/>
+    <rect x="412" y="422" width="78" height="233" rx="39"/>
+    <rect x="502" y="432" width="78" height="223" rx="39"/>
+    <rect x="592" y="470" width="78" height="185" rx="39"/>
+    <rect x="168" y="636" width="205" height="88" rx="44" transform="rotate(-22 270 680)"/>
+    <rect x="308" y="598" width="374" height="250" rx="112"/>
+    <path transform="translate(315.2,119) scale(3.095)"
+          d="M50 88C25 70 8 52 8 34C8 20 19 10 32 10C41 10 48 15 50 20C52 15 59 10 68 10C81 10 92 20 92 34C92 52 75 70 50 88Z"/>
+  </g>
+</svg>

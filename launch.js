@@ -1,4 +1,4 @@
-/* Robin Help — the launch form.
+/* Helping Hand — the launch form.
  *
  * The calldata is built here by hand rather than pulled from a library, so the
  * page stays dependency-free and nothing third-party sits between a user and a

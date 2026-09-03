@@ -1,4 +1,4 @@
-/* Robin Help — everything on this page is read from chain, not typed in. */
+/* Helping Hand — everything on this page is read from chain, not typed in. */
 (() => {
   const $ = (id) => document.getElementById(id);
   const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);

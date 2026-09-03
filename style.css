@@ -1,4 +1,4 @@
-/* Robin Help — a ledger, not a casino. */
+/* Helping Hand — a ledger, not a casino. */
 :root {
   --bg: #050506;
   --panel: #0f1011;
@@ -29,9 +29,12 @@ a { color: var(--accent); }
   backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .bar-in { display: flex; align-items: center; gap: 14px; height: 62px; }
 .mark { font-weight: 700; color: var(--ink); text-decoration: none; letter-spacing: -.015em; }
-.mark::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--accent); margin-right: 9px; vertical-align: middle;
-  box-shadow: 0 0 10px var(--accent); }
+.mark { display: inline-flex; align-items: center; }
+/* The mark itself, not a stand-in dot. Transparent-background version so it
+   sits on the bar's blur rather than punching a dark square into it. */
+.mark::before { content: ""; display: inline-block; width: 26px; height: 26px;
+  background: url("brand/mark.svg") center/contain no-repeat; margin-right: 10px;
+  filter: drop-shadow(0 0 7px rgba(0,200,5,.45)); }
 .chip { font-family: var(--mono); font-size: .68rem; letter-spacing: .04em; color: var(--dim);
   border: 1px solid var(--line); border-radius: 100px; padding: 3px 10px; white-space: nowrap; }
 .nav { margin-left: auto; display: flex; align-items: center; gap: 22px; }

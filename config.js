@@ -2,7 +2,7 @@
 // Charity launchpad — edit this block only.
 // ============================================================
 const CONFIG = {
-  name: "Robin Help",
+  name: "Helping Hand",
   tagline: "Memecoins whose fees can only reach a charity.",
   x: "https://x.com/RobinhelpRH",
 
