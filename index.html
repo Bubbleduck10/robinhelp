@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robin Help — fees that can only reach a charity</title>
+<meta name="description" content="Launch a memecoin on Robinhood Chain. Its creator fees are locked to a charity by the contract itself — not by a promise, and not by us holding a key.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="mark" href="./">Robin&nbsp;Help</a>
+    <span class="chip" id="chain-chip">Robinhood Chain</span>
+    <nav class="nav">
+      <a href="#charities">Charities</a>
+      <a href="#how">How it works</a>
+      <a href="#limits">Limits</a>
+      <a id="nav-x" href="https://x.com/RobinhelpRH" target="_blank" rel="noopener">X</a>
+      <a href="#launch" class="btn sm">Launch a coin</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Trading fees → charity, enforced by code</p>
+    <h1>The fees can't reach<br>anyone but the charity.</h1>
+    <p class="lede">Launch a memecoin. Its creator fees go to a vault that is <em>structurally
+    incapable</em> of paying anybody else — not the person who launched it, and not us.
+    That isn't a policy we could revise. It's the absence of a function.</p>
+
+    <div class="cta">
+      <a href="#launch" class="btn">Launch a coin ›</a>
+      <a href="#how" class="btn ghost">See why it holds ›</a>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat"><span class="k">Campaigns</span><span class="v" id="s-campaigns">—</span></div>
+      <div class="stat"><span class="k">Charities</span><span class="v" id="s-charities">5</span></div>
+      <div class="stat"><span class="k">Fees collected</span><span class="v" id="s-fees">—</span></div>
+      <div class="stat"><span class="k">Our cut</span><span class="v ok">0%</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="charities">
+  <div class="wrap">
+    <h2>Five charities</h2>
+    <p class="sub">Fixed in the contract when it was deployed. There is no function to add a sixth,
+    remove one, or change where any of them point. Adding a charity would mean deploying a
+    different launchpad, and you'd be able to tell.</p>
+    <div class="grid" id="charity-grid"></div>
+    <p class="fine">Payouts route through donate.gg, which holds the relationship with each charity
+    and resolves its current payout address. Each config ID below is a public value published on
+    that charity's page.</p>
+  </div>
+</section>
+
+<section class="panel alt" id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>
+        <h3>You launch a coin and pick a charity</h3>
+        <p>The launchpad deploys a vault for your campaign and launches the token through pons,
+        with the vault set as the creator fee recipient. Whatever recipient you pass is discarded
+        and replaced — a launcher cannot aim fees at themselves.</p>
+      </li>
+      <li>
+        <h3>Trading generates creator fees</h3>
+        <p>Fees are swept from the bonding curve into the campaign's vault, in ETH. Anyone can
+        trigger the next step; nothing depends on us running a bot.</p>
+      </li>
+      <li>
+        <h3>The vault bridges to the charity</h3>
+        <p>The vault's only outbound call sends ETH to Ethereum, where a forwarder donates it under
+        the charity's config. Every hop is a public transaction you can follow.</p>
+      </li>
+    </ol>
+
+    <div class="proof">
+      <h3>Why it can't be redirected</h3>
+      <p>Three routes could divert a campaign's fees. The design closes all three, and the tests
+      check each one.</p>
+      <table class="tbl">
+        <thead><tr><th>Route</th><th>Closed by</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>The fee recipient hands the stream to someone else — instant, no delay</td>
+            <td>only the current recipient can do that, and the recipient is a contract with no
+            such function. A wallet could always sign it; a contract without the code cannot.</td>
+          </tr>
+          <tr>
+            <td>The protocol's rescue path pays the token's <em>deployer</em>, not its fee recipient</td>
+            <td>the vault launches the token itself, so it is the deployer too</td>
+          </tr>
+          <tr>
+            <td>The vault spending its own balance</td>
+            <td>no owner, no admin, no withdraw, no upgrade path. One outbound call, to a fixed
+            address.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="campaigns">
+  <div class="wrap">
+    <h2>Campaigns</h2>
+    <div id="campaign-list" class="cards">
+      <p class="empty">No campaigns yet. The first one launched will appear here, read live from chain.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel alt" id="limits">
+  <div class="wrap narrow">
+    <h2>What we can't promise</h2>
+    <p class="sub">A page like this usually says "trustless" and stops. Here is the specific,
+    complete list of what remains outside our control, so you can price it yourself.</p>
+
+    <div class="limit">
+      <h3>Two parties retain power. Neither can act quietly.</h3>
+      <p>The <strong>pons protocol owner</strong> can move a token's fee recipient, but only by
+      proposing the change publicly and waiting out a <strong>3-day timelock</strong>. And
+      <strong>donate.gg</strong>, whose relay receives the final donation, can upgrade that
+      contract — it's a proxy under one key.</p>
+    </div>
+
+    <div class="limit">
+      <h3>Payouts take about six days. Sometimes seconds.</h3>
+      <p>The route that always works is the chain's own bridge, and it carries a
+      <strong id="lim-days">6.36</strong>-day challenge period — the delay every optimistic rollup
+      withdrawal has. It depends on nothing but the rollup, <strong>anyone</strong> can trigger it,
+      and it cannot be blocked.</p>
+      <p>There is also a fast route through Across that settles in <strong>seconds</strong> for a
+      few hundredths of a percent, and the contract caps what any caller can concede to relayers so
+      nobody can quote a hostile rate and keep the difference. But it depends on third-party
+      relayers keeping capital on this route, and on a chain this young that comes and goes — we
+      have seen it quote seven seconds in the morning and offer nothing by the evening.</p>
+      <p>So treat the fast route as a bonus and the six days as the real answer. A donation is
+      never stuck either way: the slow route is always available to anybody who wants to push it
+      through.</p>
+    </div>
+
+    <div class="limit">
+      <h3>"100% to the cause" would be false.</h3>
+      <p>We take <strong>0%</strong> — there is no fee parameter in our contracts and the donation
+      tip is hardcoded to zero. But the pons protocol takes its own cut of trading fees before the
+      creator share exists, as it does for every token on this chain. So: <strong>100% of the
+      creator fee share reaches the charity</strong>, not 100% of every trade.</p>
+    </div>
+
+    <div class="limit warn">
+      <h3>Not audited yet.</h3>
+      <p>The contracts compile and pass their tests. Nobody outside has reviewed them. Until that
+      changes, treat this as software that has not been proven, because it hasn't.</p>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="launch">
+  <div class="wrap narrow">
+    <h2>Launch a coin</h2>
+    <p class="sub">Name it, pick a cause, and the fee routing is locked the moment it deploys.</p>
+    <div class="soon" id="launch-box">
+      <p><strong>The launchpad contract isn't deployed yet.</strong></p>
+      <p class="fine">Once it is, this becomes the launch form. Until then there is nothing to
+      connect a wallet to, and we'd rather show you that than a button that does nothing.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <p class="fine"><strong>These are memecoins. Nothing here is financial advice, and you should
+    expect to lose what you put in.</strong> The charity routing is real and verifiable on chain;
+    the price of a memecoin is not a donation receipt, and buying one is not tax deductible.</p>
+    <p class="fine">Charities are named because funds route to them through donate.gg. Naming does
+    not imply they endorse this project.</p>
+    <p class="fine"><strong>Robin Help is not affiliated with, endorsed by, or connected to
+    Robinhood Markets, Inc.</strong> We build on Robinhood Chain, a public blockchain, in the same
+    way anyone can. The name and the colours are ours, not theirs.</p>
+    <p class="fine"><a id="foot-x" href="https://x.com/RobinhelpRH" target="_blank" rel="noopener">@RobinhelpRH</a></p>
+    <p class="fine" id="contracts"></p>
+  </div>
+</footer>
+
+<script src="config.js?v=9"></script>
+<script src="app.js?v=7"></script>
+</body>
+</html>

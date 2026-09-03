@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign — Robin Help</title>
+<meta name="description" content="A campaign coin, its charity, and on-chain proof of where its fees can go.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="mark" href="./">Robin&nbsp;Help</a>
+    <span class="chip" id="chain-chip">Robinhood Chain</span>
+    <nav class="nav">
+      <a href="./#charities">Charities</a>
+      <a href="./#how">How it works</a>
+      <a href="./" class="btn sm">All campaigns</a>
+    </nav>
+  </div>
+</header>
+
+<section class="camp-head">
+  <div class="wrap">
+    <a class="back" href="./">‹ All campaigns</a>
+    <div class="camp-top">
+      <div>
+        <h1 id="c-symbol">…</h1>
+        <p class="camp-name" id="c-name">Loading from chain…</p>
+      </div>
+      <div class="camp-charity">
+        <span class="k">Supporting</span>
+        <span class="v" id="c-charity">—</span>
+      </div>
+    </div>
+    <p class="addr" id="c-address">—</p>
+  </div>
+</section>
+
+<!-- The point of the page. Nothing here is asserted; it is all checked. -->
+<section class="panel" id="verify">
+  <div class="wrap">
+    <h2>Where the fees can go</h2>
+    <p class="sub">These checks run against the chain every time this page loads. If any of them
+    fail, this campaign's fees are <em>not</em> locked to the charity, and the page says so.</p>
+
+    <div class="verdict" id="verdict">
+      <span class="badge wait" id="v-badge">checking…</span>
+      <p id="v-text">Reading the launch record from the protocol.</p>
+    </div>
+
+    <ul class="checks" id="checks"></ul>
+
+    <p class="fine">Even when all three pass, two parties retain power and neither can act quietly:
+    the pons protocol owner, behind a 3-day public timelock, and donate.gg, whose relay is
+    upgradeable. <a href="./#limits">The full list of limits ›</a></p>
+  </div>
+</section>
+
+<section class="panel alt">
+  <div class="wrap">
+    <h2>Market</h2>
+    <div class="stats">
+      <div class="stat"><span class="k">Price</span><span class="v" id="m-price">—</span></div>
+      <div class="stat"><span class="k">Market cap</span><span class="v" id="m-mcap">—</span></div>
+      <div class="stat"><span class="k">Volume 24h</span><span class="v" id="m-vol">—</span></div>
+      <div class="stat"><span class="k">Supply</span><span class="v" id="m-supply">—</span></div>
+    </div>
+    <p class="fine" id="m-src">Awaiting first trade.</p>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="wrap">
+    <h2>The vault</h2>
+    <div class="stats">
+      <div class="stat"><span class="k">Awaiting payout</span><span class="v" id="v-bal">—</span></div>
+      <div class="stat"><span class="k">Paid out</span><span class="v" id="v-paid">—</span></div>
+      <div class="stat"><span class="k">Payouts</span><span class="v" id="v-count">—</span></div>
+      <div class="stat"><span class="k">Our cut</span><span class="v ok">0%</span></div>
+    </div>
+    <p class="addr" id="v-addr">—</p>
+
+    <h3 style="margin-top:28px">Payout history</h3>
+    <ul class="log" id="v-log"><li class="idle">Reading payout events from chain…</li></ul>
+    <p class="fine">Payouts normally take about 6.36 days — the challenge period on the chain's own
+    bridge, which depends on nothing but the rollup. When bridge relayers have capital on this
+    route, a payout can instead settle in seconds. Anyone can trigger either, so a payout is never
+    stuck waiting on us.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <p class="fine"><strong>This is a memecoin. Nothing here is financial advice, and you should
+    expect to lose what you put in.</strong> Buying one is not a donation and is not tax
+    deductible; the fee routing is the donation, and it is verifiable above.</p>
+  </div>
+</footer>
+
+<script src="config.js?v=9"></script>
+<script src="campaign.js?v=3"></script>
+</body>
+</html>
