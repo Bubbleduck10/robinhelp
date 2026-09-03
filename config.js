@@ -21,7 +21,7 @@ const CONFIG = {
   logsFallbacks: [200000, 40000],    // ~5.8h, ~1.2h if the wide query is refused
 
   // ---- our contracts (fill in after deployment) ----
-  factory: "0xBba6f568E03Fc2F8253290c501eA4287F073Ffeb",  // live on Robinhood Chain
+  factory: "0x21cA86cEc750b00509a783350218aBb6d938fEf3",  // live on Robinhood Chain
   ponsFactory: "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
 
   // Rollup facts, used for the honest "in transit" copy.
@@ -59,6 +59,8 @@ const CONFIG = {
       forwarder: "0x6b31F2A7EEde45a35322A5A14217a0b8A971181B", url: "https://www.donate.gg/charities/water-aid" },
     { id: 3, name: "UNICEF USA", short: "UNICEF",
       configId: "0x7fb3f9dfae76054818d090b5a8c6b628e09f74160f792b9ef299d2bc1e7d9ed3",
+      // NB: same address as the retired first factory on Robinhood Chain — same
+      // deployer, same nonce, different chains. It is not that factory.
       forwarder: "0xBba6f568E03Fc2F8253290c501eA4287F073Ffeb", url: "https://www.donate.gg/charities/unicef-usa" },
     { id: 4, name: "Feeding America", short: "Feeding America",
       configId: "0x63f61d5832e2b3839a7336f84c5ae00bd6759ad70dfe935f73d6eba4255f4f49",
