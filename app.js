@@ -194,6 +194,7 @@
     }
     // The stat counts what is listed, so it can never disagree with the cards.
     $("s-campaigns").textContent = shown;
+    document.dispatchEvent(new CustomEvent("hh:campaigns", { detail: campaignCache }));
     const src = $("campaign-src");
     if (src) src.textContent = shown
       ? `${shown} campaign${shown > 1 ? "s" : ""} on chain`
@@ -295,6 +296,7 @@
       box.appendChild(el);
     });
     $("ledger-src").textContent = `${rows.length} event${rows.length > 1 ? "s" : ""} on chain`;
+    document.dispatchEvent(new CustomEvent("hh:ledger", { detail: rows }));
   };
 
   /* ---------------- the project token ---------------- */
