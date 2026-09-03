@@ -257,6 +257,9 @@
   const loadToken = async () => {
     const t = CONFIG.mainToken;
     if (!t.address) return;                 // panel keeps its honest empty state
+    // It is launched now, so the empty state must stop saying it isn't. The
+    // chart still needs trades before it can draw anything.
+    $("t-empty").textContent = "Launched. The chart draws itself once there are trades to plot.";
     $("t-buy").hidden = false;
     $("t-buy").href = `https://dexscreener.com/${CONFIG.chain}/${t.address}`;
 
