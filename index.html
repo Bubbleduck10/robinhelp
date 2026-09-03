@@ -188,18 +188,17 @@
     </div>
 
     <div class="limit">
-      <h3>Payouts take about six days. Sometimes seconds.</h3>
-      <p>The route that always works is the chain's own bridge, and it carries a
+      <h3>Payouts take about six days.</h3>
+      <p>There is exactly one exit, and it is the chain's own bridge. It carries a
       <strong id="lim-days">6.36</strong>-day challenge period — the delay every optimistic rollup
       withdrawal has. It depends on nothing but the rollup, <strong>anyone</strong> can trigger it,
       and it cannot be blocked.</p>
-      <p>There is also a fast route through Across that settles in <strong>seconds</strong>, and the
-      contract caps what any caller can concede to relayers so nobody can quote a hostile rate and
-      keep the difference. But it needs third-party relayers holding capital on this route, and on a
-      chain this young that comes and goes — we have seen it quote seven seconds in the morning and
-      offer nothing by evening.</p>
-      <p>So treat the fast route as a bonus and the six days as the real answer. A donation is never
-      stuck either way.</p>
+      <p>An earlier version also bridged through Across, settling in seconds. We removed it before
+      launch. Across pays contract recipients in <strong>WETH rather than ETH</strong>, and the
+      address receiving a donation is a contract that only understands ETH — so the fast route would
+      have delivered a charity's money in a form its own forwarder could never spend, permanently,
+      and anyone could have triggered it. Six honest days beat a shortcut that can destroy the
+      donation.</p>
     </div>
 
     <div class="limit">
