@@ -88,6 +88,7 @@
   $("chain-chip").innerHTML = '<i class="pulse"></i>' + CONFIG.chainName;
   $("lim-days").textContent = CONFIG.challengePeriodDays;
   $("t-sym").textContent = CONFIG.mainToken.symbol;
+  if (CONFIG.mainToken.tradeFeeNote) $("t-fee").textContent = CONFIG.mainToken.tradeFeeNote;
   $("contracts").innerHTML = CONFIG.factory
     ? ` · Launchpad <a href="${CONFIG.explorer}/address/${CONFIG.factory}" target="_blank" rel="noopener">${short(CONFIG.factory)}</a>`
     : "";

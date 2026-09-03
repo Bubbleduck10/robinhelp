@@ -33,8 +33,12 @@ const CONFIG = {
   // so rather than showing a chart of nothing.
   mainToken: {
     symbol: "RH",
-    address: "",           // <-- paste the token address at launch
-    launched: false,
+    address: "0x0da71Ef39a1640d805dd4054F01e7BF5091345ac",
+    launched: true,
+    // Launched through the pons form, which defaults creator tax to 1%. So a
+    // trade pays 2% total: the 1% curve fee plus 1% creator tax. It is fixed at
+    // launch with no setter, so it is stated rather than quietly carried.
+    tradeFeeNote: "2% per trade — 1% curve fee, 1% creator tax. Fixed at launch.",
   },
 
   // A campaign donates roughly this share of its trading volume: pons charges
