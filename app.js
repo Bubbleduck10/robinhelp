@@ -113,19 +113,34 @@
     ? ` · Launchpad <a href="${CONFIG.explorer}/address/${CONFIG.factory}" target="_blank" rel="noopener">${short(CONFIG.factory)}</a>`
     : "";
 
+  /* One glyph per cause, drawn rather than fetched: a remote logo would be a
+     third-party request on every load, and these charities' marks are theirs,
+     not ours to re-host. Keyed by the same id the contract uses. */
+  const ICON = {
+    0: '<path d="M9.5 2h5v5.5H20v5h-5.5V18h-5v-5.5H4v-5h5.5z"/>',                       // cross
+    1: '<path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9z"/>', // star
+    2: '<path d="M12 2.2s7 7.6 7 11.4a7 7 0 1 1-14 0C5 9.8 12 2.2 12 2.2z"/>',          // droplet
+    3: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2c1.7 0 3.2 2.7 3.2 6S13.7 16 12 16s-3.2-2.7-3.2-6S10.3 4 12 4zM3.6 9h16.8M3.6 15h16.8"/>', // globe
+    4: '<path d="M3 10.5h18a9 9 0 0 1-18 0zM12 8.5c0-2 2.5-2 2.5-4M8 8.5c0-1.4 1.6-1.6 1.6-3"/>',   // bowl
+  };
+
   const grid = $("charity-grid");
   grid.innerHTML = "";
   CONFIG.charities.forEach((c) => {
     const live = !!c.forwarder;
     const el = document.createElement("div");
-    el.className = "card";
+    el.className = "card ch";
     el.innerHTML =
-      `<span class="badge ${live ? "live" : "wait"}">${live ? "routing live" : "not yet routed"}</span>` +
+      `<div class="ch-top">` +
+        `<span class="ch-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">${ICON[c.id] || ""}</svg></span>` +
+        `<span class="badge ${live ? "live" : "wait"}">${live ? "routing live" : "not yet routed"}</span>` +
+      `</div>` +
       `<div class="name">${c.name}</div>` +
-      `<div class="cid">config ${c.configId.slice(0, 20)}…${c.configId.slice(-6)}</div>` +
+      `<div class="ch-raised"><b id="ct-${c.id}">—</b><span>received on Ethereum</span></div>` +
+      `<div class="cid">config ${c.configId.slice(0, 14)}…${c.configId.slice(-6)}</div>` +
       (live ? `<div class="cid">payout <a href="https://etherscan.io/address/${c.forwarder}" target="_blank" rel="noopener">${short(c.forwarder)}</a></div>`
             : `<div class="cid">payout contract not deployed</div>`) +
-      `<a href="${c.url}" target="_blank" rel="noopener" style="font-size:.86rem">Charity page ›</a>`;
+      `<a class="ch-link" href="${c.url}" target="_blank" rel="noopener">Charity page ›</a>`;
     grid.appendChild(el);
   });
 
@@ -186,6 +201,7 @@
   const loadLedger = async () => {
     const rows = [];
     let released = 0n, delivered = 0n;
+    const byCharity = {};          // id -> total received, for the charity cards
 
     // outbound, from every campaign vault
     for (const c of campaignCache) {
@@ -217,9 +233,13 @@
         const { logs, head } = await getLogs(
           L1_RPC, RELAY, [TOPIC.donationMade, c.configId],
           [9000, 2000], ETH_SECONDS_PER_BLOCK);
+        // Only set once the query actually returned: a charity whose relay we
+        // could not read must keep showing "—" rather than a confident zero.
+        byCharity[c.id] = 0n;
         logs.forEach((l) => {
           const amount = big("0x" + wordAt(l.data, 1));
           delivered += amount;
+          byCharity[c.id] += amount;
           rows.push({
             kind: "done", amount,
             title: `Donated to ${c.short}`,
@@ -229,6 +249,11 @@
           });
         });
       } catch { /* relay unreadable; skip */ }
+    }
+
+    for (const [id, total] of Object.entries(byCharity)) {
+      const cell = $("ct-" + id);
+      if (cell) cell.textContent = eth(total) + " ETH";
     }
 
     // Deliberately not `released - delivered`. A delivery cannot be matched to
@@ -249,7 +274,7 @@
     box.innerHTML = "";
     rows.slice(0, 20).forEach((r) => {
       const el = document.createElement("div");
-      el.className = "led";
+      el.className = "led " + (r.kind === "done" ? "is-done" : "is-transit");
       el.innerHTML =
         `<span class="pill ${r.kind === "done" ? "done" : "transit"}">${r.kind === "done" ? "delivered" : "in transit"}</span>` +
         `<div class="who"><b>${r.title}</b><span>${r.note}</span></div>` +
