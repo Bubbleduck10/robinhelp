@@ -10,9 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
+
+<canvas id="bubbles" aria-hidden="true"></canvas>
 
 <header class="bar">
   <div class="wrap bar-in">
@@ -124,14 +126,63 @@
   <div class="wrap">
     <h2>How it works</h2>
 
-    <div class="flow">
-      <div class="fnode"><span class="fk">01</span><b>Trade</b><span>fees accrue on the curve</span></div>
-      <span class="farrow">→</span>
-      <div class="fnode"><span class="fk">02</span><b>Vault</b><span>collects them, can't spend them</span></div>
-      <span class="farrow">→</span>
-      <div class="fnode"><span class="fk">03</span><b>Bridge</b><span>to Ethereum, destination fixed</span></div>
-      <span class="farrow">→</span>
-      <div class="fnode end"><span class="fk">04</span><b>Charity</b><span>donated under its config</span></div>
+    <div class="diagram">
+      <svg viewBox="0 0 900 232" role="img"
+           aria-label="A trade's fees accrue on the curve, collect in the campaign vault, cross the bridge to Ethereum, and are donated to the charity. From the vault there is no path to the launcher, to us, or to anyone else.">
+        <!-- the live path -->
+        <path id="d-path" class="d-wire live"
+              d="M173 68 H238 M403 68 H468 M633 68 H698"/>
+        <path class="d-pulse" d="M173 68 H238 M403 68 H468 M633 68 H698"/>
+
+        <!-- arrowheads on the live path -->
+        <g fill="var(--accent)">
+          <path d="M238 68 l-8 -4.5 v9 z"/><path d="M468 68 l-8 -4.5 v9 z"/><path d="M698 68 l-8 -4.5 v9 z"/>
+        </g>
+
+        <!-- 01 trade -->
+        <rect class="d-node" x="8" y="30" width="165" height="76" rx="11"/>
+        <text class="d-step" x="26" y="52">01</text>
+        <text class="d-title" x="26" y="72">Trade</text>
+        <text class="d-sub" x="26" y="90">fees accrue on the curve</text>
+
+        <!-- 02 vault -->
+        <rect class="d-node is-vault" x="238" y="30" width="165" height="76" rx="11"/>
+        <text class="d-step" x="256" y="52">02</text>
+        <text class="d-title" x="256" y="72">Vault</text>
+        <text class="d-sub" x="256" y="90">one exit, fixed at birth</text>
+
+        <!-- 03 bridge -->
+        <rect class="d-node" x="468" y="30" width="165" height="76" rx="11"/>
+        <text class="d-step" x="486" y="52">03</text>
+        <text class="d-title" x="486" y="72">Bridge</text>
+        <text class="d-sub" x="486" y="90">to Ethereum, ~6.36 days</text>
+
+        <!-- 04 charity -->
+        <rect class="d-node" x="698" y="30" width="165" height="76" rx="11"/>
+        <text class="d-step" x="716" y="52">04</text>
+        <text class="d-title" x="716" y="72">Charity</text>
+        <text class="d-sub" x="716" y="90">donated under its config</text>
+
+        <!-- the three routes that do not exist -->
+        <g>
+          <path class="d-dead" d="M290 106 V150 H150"/>
+          <path class="d-dead" d="M320 106 V172 H320"/>
+          <path class="d-dead" d="M350 106 V150 H500"/>
+          <g class="d-x">
+            <path d="M144 144 l12 12 M156 144 l-12 12"/>
+            <path d="M314 178 l12 12 M326 178 l-12 12"/>
+            <path d="M494 144 l12 12 M506 144 l-12 12"/>
+          </g>
+          <text class="d-deadlabel" x="60"  y="176">the launcher</text>
+          <text class="d-deadlabel" x="286" y="210">us</text>
+          <text class="d-deadlabel" x="520" y="176">anyone else</text>
+        </g>
+      </svg>
+
+      <div class="d-legend">
+        <span><i></i> the only path fees can take</span>
+        <span><i class="dead"></i> routes the contract does not contain</span>
+      </div>
     </div>
 
     <div class="proof">
@@ -279,8 +330,9 @@
   </div>
 </footer>
 
+<script src="bubbles.js?v=1" defer></script>
 <script src="config.js?v=12"></script>
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 <script src="launch.js?v=1"></script>
 </body>
 </html>

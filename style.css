@@ -277,3 +277,76 @@ footer { padding: 40px 0 60px; }
 .foot strong { color: var(--ink); }
 code { font-family: var(--mono); font-size: .86em; background: #17181a;
   padding: 1px 5px; border-radius: 4px; color: var(--body); }
+
+/* ============================================================
+   Visual layer — depth, bubbles, and the mechanism diagram.
+   Added on top of the original system; nothing above is restyled,
+   so the type scale and spacing stay exactly as they were.
+   ============================================================ */
+
+/* ---------- the bubble field ---------- */
+/* Fixed behind everything. Low opacity and a mask that fades the top so it
+   never sits under the header text fighting for contrast. */
+#bubbles { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0;
+  pointer-events: none; opacity: .55;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%); }
+/* Everything real sits above it. */
+body > header, body > section, body > footer { position: relative; z-index: 1; }
+
+/* ---------- panels get depth ---------- */
+/* A hairline of light along the top edge — the cheapest way to make a flat
+   dark surface read as a raised one. */
+.panel { position: relative; }
+.panel.alt::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,200,5,.28), transparent); }
+
+.stat, .card, .proof, .steps li, .chartwrap, .limit {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,0) 62%); }
+
+/* ---------- cards lift ---------- */
+.card { position: relative; overflow: hidden;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.card::after { content: ""; position: absolute; inset: -1px -1px auto -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,200,5,.5), transparent);
+  opacity: 0; transition: opacity .16s ease; }
+.card:hover { transform: translateY(-2px); border-color: #2f3338;
+  box-shadow: 0 12px 34px rgba(0,0,0,.5), 0 0 0 1px rgba(0,200,5,.06); }
+.card:hover::after { opacity: 1; }
+
+.stat { position: relative; }
+.stat .v { position: relative; }
+.stat .v.ok { text-shadow: 0 0 22px rgba(0,200,5,.35); }
+
+/* ---------- the mechanism diagram ---------- */
+.diagram { margin: 6px 0 34px; border: 1px solid var(--line); border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 60%), var(--panel);
+  padding: 26px 20px 18px; overflow-x: auto; }
+.diagram svg { display: block; width: 100%; min-width: 660px; height: auto; }
+
+.d-node { fill: #141618; stroke: #23262a; }
+.d-node.is-vault { stroke: var(--accent); }
+.d-title { fill: var(--ink); font: 600 13px var(--sans); }
+.d-sub { fill: var(--dim); font: 400 10.5px var(--mono); }
+.d-step { fill: var(--accent); font: 500 9.5px var(--mono); letter-spacing: .09em; }
+.d-wire { stroke: #2a2d31; stroke-width: 1.6; fill: none; }
+.d-wire.live { stroke: var(--accent); }
+.d-dead { stroke: var(--bad); stroke-width: 1.5; fill: none; opacity: .55;
+  stroke-dasharray: 4 4; }
+.d-deadlabel { fill: var(--bad); font: 400 10px var(--mono); opacity: .8; }
+.d-x { stroke: var(--bad); stroke-width: 1.7; opacity: .9; }
+
+/* A bright segment travelling the live path: the fee actually moving. Done as
+   a dash offset rather than SMIL, so prefers-reduced-motion can switch it off. */
+.d-pulse { stroke: var(--accent); stroke-width: 2.6; fill: none; stroke-linecap: round;
+  stroke-dasharray: 14 300; filter: drop-shadow(0 0 5px rgba(0,200,5,.75)); opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .d-pulse { opacity: 1; animation: dashflow 4.4s linear infinite; }
+}
+@keyframes dashflow { from { stroke-dashoffset: 314; } to { stroke-dashoffset: 0; } }
+
+.d-legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px;
+  font-family: var(--mono); font-size: .68rem; color: var(--dim); }
+.d-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.d-legend i { width: 16px; height: 0; border-top: 2px solid var(--accent); display: inline-block; }
+.d-legend i.dead { border-top: 2px dashed var(--bad); }
