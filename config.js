@@ -4,7 +4,7 @@
 const CONFIG = {
   name: "Helping Hand",
   tagline: "Memecoins whose fees can only reach a charity.",
-  x: "https://x.com/RobinhelpRH",
+  x: "https://x.com/Helpinghandrh",
 
   // ---- chain: Robinhood Chain (Arbitrum Orbit, id 4663) ----
   chain: "robinhood",       // DexScreener chainId
@@ -32,7 +32,7 @@ const CONFIG = {
   // project's, not a charity's. Left empty until it exists — the panel then says
   // so rather than showing a chart of nothing.
   mainToken: {
-    symbol: "RH",
+    symbol: "HAND",
     address: "",           // <-- paste the token address at launch
     launched: false,
   },
