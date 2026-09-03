@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -222,12 +222,43 @@
   <div class="wrap narrow">
     <h2>Launch a coin</h2>
     <p class="sub">Name it, pick a cause, and the fee routing is locked the moment it deploys.</p>
-    <div class="soon" id="launch-box">
-      <p><strong>The launch form isn't live yet.</strong></p>
-      <p class="fine">The launchpad contract is deployed and working — campaigns can be launched
-      from the command line today. This form needs wallet connection, and we'd rather show you
-      that it's missing than a button that does nothing.</p>
-    </div>
+    <form class="lform" id="lform" novalidate>
+      <div class="frow">
+        <div class="fi">
+          <label for="f-name">Coin name</label>
+          <input id="f-name" type="text" maxlength="32" placeholder="Sharkcoin" autocomplete="off">
+        </div>
+        <div class="fi">
+          <label for="f-sym">Ticker</label>
+          <input id="f-sym" type="text" maxlength="10" placeholder="SHARK" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="fi">
+        <label for="f-desc">Description <span class="opt">optional</span></label>
+        <input id="f-desc" type="text" maxlength="120" placeholder="What is this coin for?" autocomplete="off">
+      </div>
+
+      <div class="fi">
+        <label for="f-x">Link <span class="opt">optional</span></label>
+        <input id="f-x" type="text" maxlength="120" placeholder="https://x.com/…" autocomplete="off">
+      </div>
+
+      <div class="fi">
+        <label for="f-charity">Charity — locked permanently at launch</label>
+        <select id="f-charity"></select>
+      </div>
+
+      <div class="lnote">
+        <p>Launching costs the protocol's <b>0.0005 ETH</b> fee plus gas, on Robinhood Chain.</p>
+        <p>The charity you pick is written into the coin and <b>cannot be changed afterwards</b> —
+        not by you, and not by us. Its fees will be collected by a vault with no function capable
+        of paying anyone else.</p>
+      </div>
+
+      <button class="btn" id="l-go" type="submit">Connect wallet &amp; launch ›</button>
+      <p class="lstatus" id="l-status"></p>
+    </form>
   </div>
 </section>
 
@@ -249,6 +280,7 @@
 </footer>
 
 <script src="config.js?v=10"></script>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=13"></script>
+<script src="launch.js?v=1"></script>
 </body>
 </html>

@@ -182,9 +182,11 @@
     for (const c of CONFIG.charities) {
       if (!c.forwarder) continue;
       try {
+        // drpc caps free-tier getLogs at 10,000 blocks, so starting above that
+        // guarantees a failed request before the fallback. Start under it.
         const { logs, head } = await getLogs(
           L1_RPC, RELAY, [TOPIC.donationMade, c.configId],
-          [40000, 10000, 2000], ETH_SECONDS_PER_BLOCK);
+          [9000, 2000], ETH_SECONDS_PER_BLOCK);
         logs.forEach((l) => {
           const amount = big("0x" + wordAt(l.data, 1));
           delivered += amount;

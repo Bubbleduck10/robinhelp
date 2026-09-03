@@ -146,6 +146,30 @@ h3 { font-size: 1.06rem; color: var(--ink); font-weight: 600; margin-bottom: 7px
   padding: 28px; text-align: center; }
 .soon strong { color: var(--ink); }
 
+/* ---------- launch form ---------- */
+.lform { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 26px; display: grid; gap: 16px; }
+.lform .frow { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .lform .frow { grid-template-columns: 1fr; } }
+.fi { display: grid; gap: 6px; }
+.fi label { font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--dim); }
+.fi .opt { text-transform: none; letter-spacing: 0; color: #5d6167; }
+.fi input, .fi select { width: 100%; background: #0b0c0d; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px;
+  font-family: var(--sans); font-size: .97rem; outline: none; transition: border-color .15s ease; }
+.fi input::placeholder { color: #4d5157; }
+.fi input:focus, .fi select:focus { border-color: var(--accent); }
+.fi select option:disabled { color: #5d6167; }
+.lnote { background: #0b0c0d; border: 1px solid var(--line); border-radius: 9px;
+  padding: 14px 16px; font-size: .87rem; color: var(--body); }
+.lnote p + p { margin-top: 8px; }
+.lnote b { color: var(--ink); }
+.lstatus { font-size: .9rem; color: var(--dim); min-height: 1.2em; }
+.lstatus.bad { color: var(--bad); }
+.lstatus.ok { color: var(--accent); }
+.lstatus a { color: inherit; }
+
 /* ---------- section heads ---------- */
 .sec-head { display: flex; align-items: flex-start; justify-content: space-between;
   gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
