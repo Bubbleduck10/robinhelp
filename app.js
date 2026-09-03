@@ -118,14 +118,19 @@
     let n = 0;
     try { n = Number(big(await ethCall(CONFIG.factory, SEL.campaignCount))); }
     catch { list.innerHTML = '<p class="empty">Chain unreachable — could not read campaigns.</p>'; return; }
-    $("s-campaigns").textContent = n;
-    if (!n) return;
+    if (!n) { $("s-campaigns").textContent = 0; return; }
+
+    // Hidden campaigns still exist on chain; they are only left off this list.
+    const hidden = (CONFIG.hiddenCampaigns || []).map((a) => a.toLowerCase());
+    let shown = 0;
 
     list.innerHTML = "";
     campaignCache.length = 0;
     for (let i = 0; i < Math.min(n, 24); i++) {
       try {
         const token = addrAt(await ethCall(CONFIG.factory, SEL.campaigns + padUint(i)));
+        if (hidden.includes(token.toLowerCase())) continue;
+        shown++;
         const vault = addrAt(await ethCall(CONFIG.factory, SEL.vaultOf + pad(token)));
         const cid = Number(big(await ethCall(CONFIG.factory, SEL.charityOf + pad(token))));
         const sym = decodeString(await ethCall(token, SEL.symbol)) || "?";
@@ -144,8 +149,12 @@
         list.appendChild(el);
       } catch { /* skip one we can't read */ }
     }
+    // The stat counts what is listed, so it can never disagree with the cards.
+    $("s-campaigns").textContent = shown;
     if (!list.children.length) {
-      list.innerHTML = `<p class="empty">${n} campaign${n > 1 ? "s" : ""} on chain, but none could be read.</p>`;
+      list.innerHTML = shown
+        ? `<p class="empty">${shown} campaign${shown > 1 ? "s" : ""} on chain, but none could be read.</p>`
+        : `<p class="empty">No campaigns yet. Launch the first one.</p>`;
     }
   };
 
