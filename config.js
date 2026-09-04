@@ -76,6 +76,20 @@ const CONFIG = {
     { id: 4, name: "Feeding America", short: "Feeding America",
       configId: "0x63f61d5832e2b3839a7336f84c5ae00bd6759ad70dfe935f73d6eba4255f4f49",
       forwarder: "0x163a9abd07bCC0862fC3280960605Dd4DC3c211E", url: "https://www.donate.gg/charities/feeding-america" },
+
+    // Added with the eight-charity launchpad. configIds read from each charity's
+    // own donate.gg page. `forwarder` stays empty until its L1 contract is
+    // deployed and test-donated — the card says "not yet routed" until then,
+    // and the factory cannot be deployed without all eight addresses.
+    { id: 5, name: "American Cancer Society", short: "Cancer Society",
+      configId: "0x8be9a2cc06f0679fa5502431e417c3286fab0291a837c42a30085e9a785578b6",
+      forwarder: "", url: "https://www.donate.gg/charities/american-cancer-society" },
+    { id: 6, name: "charity: water", short: "charity: water",
+      configId: "0xc4efc42eeccfcac047b95d4e219108ca2b83c9cfb5e4aafe567d3daced3a928c",
+      forwarder: "", url: "https://www.donate.gg/charities/charity-water" },
+    { id: 7, name: "Direct Relief", short: "Direct Relief",
+      configId: "0x5aee11e17119e3f6e02aec76da1d497d4fcb3e2905ea0e4559d2b4fc233b59b0",
+      forwarder: "", url: "https://www.donate.gg/charities/direct-relief" },
   ],
 
   pollMs: 30000,

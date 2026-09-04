@@ -43,7 +43,7 @@ a { color: var(--accent); }
 .nav a { color: var(--body); text-decoration: none; font-size: .92rem; font-weight: 500;
   white-space: nowrap; }
 /* Drop the least load-bearing links before the bar starts wrapping. */
-@media (max-width: 1000px) { .nav a[href$="#limits"], .nav a[href$="#how"] { display: none; } }
+@media (max-width: 1000px) { .nav a[href$="#why"], .nav a[href$="#how"] { display: none; } }
 .nav a:hover { color: var(--ink); }
 @media (max-width: 760px) { .nav a:not(.btn) { display: none; } }
 

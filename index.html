@@ -30,7 +30,7 @@
       <a href="#campaigns">Campaigns</a>
       <a href="#ledger">Donations</a>
       <a href="#how">How it works</a>
-      <a href="#limits">Limits</a>
+      <a href="#why">Why</a>
       <a href="https://x.com/Helpinghandrh" target="_blank" rel="noopener">X</a>
       <a href="#launch" class="btn sm">Launch a coin</a>
     </nav>
@@ -119,9 +119,9 @@
 
 <section class="panel" id="charities">
   <div class="wrap">
-    <h2>Five charities</h2>
-    <p class="sub">Fixed in the contract when it was deployed. There is no function to add a sixth,
-    remove one, or change where any of them point. Adding a charity would mean deploying a
+    <h2>Eight charities</h2>
+    <p class="sub">Fixed in the contract when it was deployed. There is no function to add a ninth, remove one, or
+    change where any of them point. Adding a charity would mean deploying a
     different launchpad, and you'd be able to tell.</p>
     <div class="grid" id="charity-grid"></div>
     <p class="fine">Payouts route through donate.gg, which holds the relationship with each charity
@@ -221,6 +221,13 @@
     <p class="fine">A campaign donates about <strong>0.7% of its trading volume</strong>. The
     protocol charges 1% per trade and keeps 30% of that; the remainder is the creator share, and
     all of it goes to the charity.</p>
+
+    <p class="fine">What stays outside our control, in full: payouts take
+    <strong id="lim-days">6.36</strong> days, the challenge period on the chain's own bridge. The
+    pons protocol owner can move a token's fee recipient, but only in public and only after a
+    <strong>3-day timelock</strong>. donate.gg, whose relay receives the final donation, can upgrade
+    that contract. And our contracts have not been reviewed by anyone outside this project — they
+    compile and pass their tests, which is not the same thing.</p>
   </div>
 </section>
 
@@ -241,46 +248,47 @@
   </div>
 </section>
 
-<section class="panel alt" id="limits">
+<section class="panel alt" id="why">
   <div class="wrap narrow">
-    <h2>What we can't promise</h2>
-    <p class="sub">A page like this usually says "trustless" and stops. Here is the specific,
-    complete list of what remains outside our control, so you can price it yourself.</p>
+    <h2>Why we are doing this</h2>
+    <p class="sub">Memecoins move a startling amount of money and produce nothing. We wanted to
+    know what happened if you left the machine exactly as it is and pointed the one useful output
+    somewhere that matters.</p>
 
     <div class="limit">
-      <h3>Two parties retain power. Neither can act quietly.</h3>
-      <p>The <strong>pons protocol owner</strong> can move a token's fee recipient, but only by
-      proposing the change publicly and waiting out a <strong>3-day timelock</strong>. And
-      <strong>donate.gg</strong>, whose relay receives the final donation, can upgrade that
-      contract — it's a proxy under one key.</p>
+      <h3>The fees already exist. Someone always gets them.</h3>
+      <p>Every token launched anywhere charges a fee on every trade, and a share of it goes to
+      whoever launched the thing. That is not a flaw we invented a fix for — it is simply how these
+      markets work, and it is usually the single largest transfer of value in a coin's life.</p>
+      <p>So the question was never whether to take fees. It was who receives them. We pointed that
+      share at five causes, and now eight, and removed our own ability to change our minds.</p>
     </div>
 
     <div class="limit">
-      <h3>Payouts take about six days.</h3>
-      <p>There is exactly one exit, and it is the chain's own bridge. It carries a
-      <strong id="lim-days">6.36</strong>-day challenge period — the delay every optimistic rollup
-      withdrawal has. It depends on nothing but the rollup, <strong>anyone</strong> can trigger it,
-      and it cannot be blocked.</p>
-      <p>An earlier version also bridged through Across, settling in seconds. We removed it before
-      launch. Across pays contract recipients in <strong>WETH rather than ETH</strong>, and the
-      address receiving a donation is a contract that only understands ETH — so the fast route would
-      have delivered a charity's money in a form its own forwarder could never spend, permanently,
-      and anyone could have triggered it. Six honest days beat a shortcut that can destroy the
-      donation.</p>
+      <h3>Charities do not have a money problem. They have a follow-through problem.</h3>
+      <p>Plenty of projects have promised a cut to a good cause. Most of the time nobody checks, and
+      the promise quietly becomes a marketing line that costs nothing to make and nothing to break.</p>
+      <p>Code does not forget, get busy, or change its mind when the number gets large. A vault that
+      has no function to pay anyone else is not being honest — it has no other option. That is a
+      much smaller thing to trust than a person, and you can read it yourself.</p>
     </div>
 
     <div class="limit">
-      <h3>"100% to the cause" would be false.</h3>
-      <p>We take <strong>0%</strong> — there is no fee parameter in our contracts and the donation
-      tip is hardcoded to zero. But the pons protocol takes its own cut of trading fees before the
-      creator share exists, as it does for every token on this chain. So: <strong>100% of the
-      creator fee share reaches the charity</strong>, not 100% of every trade.</p>
+      <h3>Why these causes.</h3>
+      <p>Children's cancer treatment, wishes for critically ill kids, clean water, children in
+      crisis, hunger, cancer research, water access, and disaster relief. They are large,
+      independently rated, and they publish where their money goes — which matters, because once a
+      donation leaves our contracts we have no say in what happens next, and we would rather hand it
+      to organisations that answer for it.</p>
+      <p>Every one of them is fixed in the contract. We cannot move a campaign's charity after it
+      launches, and neither can the person who launched it.</p>
     </div>
 
-    <div class="limit warn">
-      <h3>Not audited yet.</h3>
-      <p>The contracts compile and pass their tests. Nobody outside has reviewed them. Until that
-      changes, treat this as software that has not been proven, because it hasn't.</p>
+    <div class="limit">
+      <h3>It is still a memecoin.</h3>
+      <p>Buying one is not a donation and is not tax deductible. You should expect to lose what you
+      put in. The donation is the fee routing, it happens whether the price goes up or down, and it
+      is the part we can actually guarantee.</p>
     </div>
   </div>
 </section>
@@ -347,8 +355,8 @@
 </footer>
 
 <script src="bubbles.js?v=2" defer></script>
-<script src="config.js?v=15"></script>
-<script src="app.js?v=20"></script>
+<script src="config.js?v=16"></script>
+<script src="app.js?v=21"></script>
 <script src="polish.js?v=1" defer></script>
 <script src="launch.js?v=1"></script>
 </body>
