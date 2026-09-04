@@ -32,7 +32,7 @@ const CONFIG = {
   // project's, not a charity's. Left empty until it exists — the panel then says
   // so rather than showing a chart of nothing.
   mainToken: {
-    symbol: "HAND",
+    symbol: "Helpinghand",
     address: "",           // <-- paste the token address at launch
     launched: false,
   },
