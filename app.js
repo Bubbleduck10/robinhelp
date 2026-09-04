@@ -399,11 +399,41 @@
       }
     } catch { /* leave the dashes */ }
 
-    // candles for the chart, via GeckoTerminal's pool endpoint
+    // GeckoTerminal, for the chart and — when DexScreener has not indexed the
+    // token yet — for the numbers above it too. A freshly launched token is
+    // exactly the case DexScreener is slowest on, which is when the panel most
+    // needs to say something truthful, so this one response fills both.
     try {
       const pools = await (await fetch(
         `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/tokens/${t.address}/pools`)).json();
-      const pool = pools?.data?.[0]?.attributes?.address;
+      const a = pools?.data?.[0]?.attributes;
+      const pool = a?.address;
+
+      if (a && $("t-price").textContent === "—") {
+        const price = Number(a.base_token_price_usd);
+        if (price > 0) {
+          $("t-price").textContent = price >= 1 ? "$" + price.toFixed(4) : "$" + price.toPrecision(4);
+        }
+        // market_cap_usd is null for a token this young, and fdv is what the
+        // number actually is, so the label says fdv rather than passing one
+        // off as the other.
+        const mcap = Number(a.market_cap_usd);
+        const fdv = Number(a.fdv_usd);
+        if (mcap > 0) {
+          $("t-mcap").textContent = usdish(mcap);
+        } else if (fdv > 0) {
+          $("t-mcap").textContent = usdish(fdv);
+          if ($("t-mcap-label")) $("t-mcap-label").textContent = "fdv";
+        }
+        const vol = Number(a.volume_usd?.h24);
+        if (vol > 0) $("t-vol").textContent = usdish(vol);
+        const ch = Number(a.price_change_percentage?.h24);
+        if (isFinite(ch)) {
+          $("t-delta").textContent = (ch >= 0 ? "+" : "") + ch.toFixed(2) + "% 24h";
+          $("t-delta").className = "delta " + (ch >= 0 ? "up" : "down");
+        }
+      }
+
       if (!pool) return;
       const o = await (await fetch(
         `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/pools/${pool}/ohlcv/hour?limit=72`)).json();
