@@ -6,12 +6,19 @@
   const L1_RPC = "https://eth.drpc.org";          // serves getLogs over a useful range
   const RELAY = "0x02A0d2a39732082b824a5A3D3b026C54d581DCC8";  // donate.gg, Ethereum
   const ETH_SECONDS_PER_BLOCK = 12;
+  const CHUNK = 9000;          // the free L1 endpoint refuses more than 10,000
+  const MAX_CHUNKS = 24;       // ~216k blocks, about a month of history
 
   // Topics and selectors are computed from signatures, never recalled: a wrong
   // one fails silently, because the call simply reverts and the list looks empty.
   const TOPIC = {
-    releasedFast: "0x599ac48a6b909e7a3910a227f52677cd1b37f26d40ea229b3697074d698fcfea",
+    // The current vault emits Released; vaults from the retired factory emit
+    // ReleasedCanonical. Both are matched, because filtering on the old one
+    // alone made every payout from a current vault invisible — the stat would
+    // have sat at zero through a real payout and nobody would have known.
+    released: "0x4d436de77f1139fda664b657c73ad6c3bde4a1984d3aabeab7c3998556b93b63",
     releasedCanonical: "0x13713570af345cfea0b3aaea60175e30abb40dd23efcc294496177f7a41b9090",
+    campaignLaunched: "0xcea37bc2e454d11f3881906d399c2945470501e5caddeb5fd84e3c4c0088c771",
     donationMade: "0xd8e70e726414c0696085c89f19916df42c131dd051341e82d3eb198faa8b1bdc",
   };
   const SEL = {
@@ -223,16 +230,15 @@
     for (const c of campaignCache) {
       try {
         const { logs, head, secondsPerBlock } = await getLogs(
-          CONFIG.rpc, c.vault, [[TOPIC.releasedFast, TOPIC.releasedCanonical]],
+          CONFIG.rpc, c.vault, [[TOPIC.released, TOPIC.releasedCanonical]],
           [CONFIG.logsWindow, ...CONFIG.logsFallbacks], CONFIG.secondsPerBlock);
         logs.forEach((l) => {
           const amount = big("0x" + wordAt(l.data, 0));
           released += amount;
-          const fast = l.topics[0].toLowerCase() === TOPIC.releasedFast;
           rows.push({
             kind: "sent", amount,
             title: `$${c.sym} → ${c.charity ? c.charity.short : "charity"}`,
-            note: fast ? "fast route" : "canonical bridge",
+            note: "bridging to Ethereum",
             secs: (head - Number(big(l.blockNumber))) * secondsPerBlock,
             href: `${CONFIG.explorer}/tx/${l.transactionHash}`,
           });
@@ -240,32 +246,78 @@
       } catch { /* vault unreadable; skip */ }
     }
 
-    // inbound, at donate.gg's relay, restricted to our five configs
-    for (const c of CONFIG.charities) {
-      if (!c.forwarder) continue;
+    // inbound, at donate.gg's relay.
+    //
+    // Two things shape this. The free RPC refuses ranges over 10,000 blocks, and
+    // a donation older than one window used to fall out of the ledger entirely —
+    // the first real donation vanished from the site about 36 hours after it
+    // landed. So the search walks backwards in chunks to a floor instead of
+    // looking at one window.
+    //
+    // And every configId goes into topic[1] as an OR rather than one query per
+    // charity: identical results, an eighth of the requests, which is what makes
+    // walking back affordable at all.
+    const withFwd = CONFIG.charities.filter((c) => c.forwarder);
+    if (withFwd.length) {
+      const byConfig = new Map(withFwd.map((c) => [c.configId.toLowerCase(), c]));
       try {
-        // drpc caps free-tier getLogs at 10,000 blocks, so starting above that
-        // guarantees a failed request before the fallback. Start under it.
-        const { logs, head } = await getLogs(
-          L1_RPC, RELAY, [TOPIC.donationMade, c.configId],
-          [9000, 2000], ETH_SECONDS_PER_BLOCK);
-        // Only set once the query actually returned: a charity whose relay we
-        // could not read must keep showing "—" rather than a confident zero.
-        byCharity[c.id] = 0n;
-        logs.forEach((l) => {
-          const amount = big("0x" + wordAt(l.data, 1));
-          delivered += amount;
-          byCharity[c.id] += amount;
-          rows.push({
-            kind: "done", amount,
-            title: `Donated to ${c.short}`,
-            note: "credited on Ethereum",
-            secs: (head - Number(big(l.blockNumber))) * ETH_SECONDS_PER_BLOCK,
-            href: `https://etherscan.io/tx/${l.transactionHash}`,
-          });
-        });
-      } catch { /* relay unreadable; skip */ }
+        const head = Number(big(await call(L1_RPC, "eth_blockNumber", [])));
+        const floor = Math.max(CONFIG.l1FirstBlock || 0, head - CHUNK * MAX_CHUNKS);
+        const ranges = [];
+        for (let to = head - 30; to > floor; to -= CHUNK) {
+          ranges.push([Math.max(floor, to - CHUNK + 1), to]);
+        }
+
+        // A charity we managed to query shows a real total, including zero.
+        withFwd.forEach((c) => { byCharity[c.id] = 0n; });
+
+        // Small groups: the free endpoint rate-limits a burst of 25 at once.
+        for (let i = 0; i < ranges.length; i += 4) {
+          const batch = await Promise.all(ranges.slice(i, i + 4).map(([from, to]) =>
+            call(L1_RPC, "eth_getLogs", [{
+              fromBlock: "0x" + from.toString(16),
+              toBlock: "0x" + to.toString(16),
+              address: RELAY,
+              topics: [TOPIC.donationMade, [...byConfig.keys()]],
+            }]).catch(() => [])));
+
+          for (const logs of batch) {
+            for (const l of logs) {
+              const c = byConfig.get((l.topics[1] || "").toLowerCase());
+              if (!c) continue;
+              const amount = big("0x" + wordAt(l.data, 1));
+              delivered += amount;
+              byCharity[c.id] += amount;
+              rows.push({
+                kind: "done", amount,
+                title: `Donated to ${c.short}`,
+                note: "credited on Ethereum",
+                secs: (head - Number(big(l.blockNumber))) * ETH_SECONDS_PER_BLOCK,
+                href: `https://etherscan.io/tx/${l.transactionHash}`,
+              });
+            }
+          }
+        }
+      } catch { /* relay unreadable; the cards keep their em dash */ }
     }
+
+    // campaign launches, from the factory itself
+    try {
+      const { logs, head, secondsPerBlock } = await getLogs(
+        CONFIG.rpc, CONFIG.factory, [TOPIC.campaignLaunched],
+        [CONFIG.logsWindow, ...CONFIG.logsFallbacks], CONFIG.secondsPerBlock);
+      for (const l of logs) {
+        const token = "0x" + (l.topics[1] || "").slice(26);
+        const c = campaignCache.find((x) => x.token.toLowerCase() === token.toLowerCase());
+        rows.push({
+          kind: "launch", amount: null,
+          title: `${c ? c.sym : "?"} launched`,
+          note: c && c.charity ? `routing to ${c.charity.short}` : "campaign created",
+          secs: (head - Number(big(l.blockNumber))) * secondsPerBlock,
+          href: `${CONFIG.explorer}/tx/${l.transactionHash}`,
+        });
+      }
+    } catch { /* factory unreadable; skip */ }
 
     for (const [id, total] of Object.entries(byCharity)) {
       const cell = $("ct-" + id);
@@ -290,11 +342,12 @@
     box.innerHTML = "";
     rows.slice(0, 20).forEach((r) => {
       const el = document.createElement("div");
-      el.className = "led " + (r.kind === "done" ? "is-done" : "is-transit");
+      el.className = "led is-" + r.kind;
       el.innerHTML =
-        `<span class="pill ${r.kind === "done" ? "done" : "transit"}">${r.kind === "done" ? "delivered" : "in transit"}</span>` +
+        `<span class="pill ${{done: "done", sent: "transit", launch: "new"}[r.kind]}">` +
+        `${{done: "delivered", sent: "in transit", launch: "launched"}[r.kind]}</span>` +
         `<div class="who"><b>${r.title}</b><span>${r.note}</span></div>` +
-        `<span class="amt">${eth(r.amount)} ETH</span>` +
+        `<span class="amt">${r.amount === null ? "—" : eth(r.amount) + " ETH"}</span>` +
         `<a class="tx" href="${r.href}" target="_blank" rel="noopener">${ago(r.secs)} ↗</a>`;
       box.appendChild(el);
     });

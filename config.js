@@ -24,6 +24,11 @@ const CONFIG = {
   factory: "0x21cA86cEc750b00509a783350218aBb6d938fEf3",  // live on Robinhood Chain
   ponsFactory: "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
 
+  // The first donation landed at Ethereum block 25,893,523. Nothing our relay
+  // query cares about exists before this, so the backwards walk stops here
+  // rather than scanning the chain.
+  l1FirstBlock: 25893000,
+
   // Rollup facts, used for the honest "in transit" copy.
   challengePeriodDays: 6.36,
 

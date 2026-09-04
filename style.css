@@ -453,3 +453,9 @@ h1::after { content: ""; display: block; width: 74px; height: 3px; margin-top: 2
 /* ---------- section numerals ---------- */
 /* An editorial spine down the page: each panel announces itself. */
 .panel > .wrap > h2, .panel > .wrap > .sec-head h2 { position: relative; }
+
+/* A campaign launch is an event on the same feed, but it is not money moving —
+   so it reads in the neutral colour rather than borrowing green or amber. */
+.pill.new { background: rgba(255,255,255,.05); color: var(--body); border: 1px solid var(--line); }
+.led.is-launch::after { border-color: var(--dim); }
+.led.is-launch .amt { color: var(--dim); }
