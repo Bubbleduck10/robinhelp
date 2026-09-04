@@ -46,8 +46,13 @@ const CONFIG = {
   // so rather than showing a chart of nothing.
   mainToken: {
     symbol: "Helping",
-    address: "",           // <-- paste the token address at launch
-    launched: false,
+    address: "0x8b2d3cB9b0c0bd66116e541fafF5c73501F2c1F2",
+    launched: true,
+    // Launched through the pons form, which defaults creator tax to 1% — the
+    // same default that caught the previous token. So a trade pays 2% total.
+    // Snapshotted at launch with no setter, so it is stated rather than
+    // quietly carried.
+    tradeFeeNote: "2% per trade — 1% curve fee, 1% creator tax. Fixed at launch.",
   },
 
   // Campaigns the site does not list. The factory's `campaigns` array is
