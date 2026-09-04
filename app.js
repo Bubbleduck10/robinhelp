@@ -6,8 +6,6 @@
   const L1_RPC = "https://eth.drpc.org";          // serves getLogs over a useful range
   const RELAY = "0x02A0d2a39732082b824a5A3D3b026C54d581DCC8";  // donate.gg, Ethereum
   const ETH_SECONDS_PER_BLOCK = 12;
-  const CHUNK = 9000;          // the free L1 endpoint refuses more than 10,000
-  const MAX_CHUNKS = 24;       // ~216k blocks, about a month of history
 
   // Topics and selectors are computed from signatures, never recalled: a wrong
   // one fails silently, because the call simply reverts and the list looks empty.
@@ -255,58 +253,47 @@
 
     // inbound, at donate.gg's relay.
     //
-    // Two things shape this. The free RPC refuses ranges over 10,000 blocks, and
-    // a donation older than one window used to fall out of the ledger entirely —
-    // the first real donation vanished from the site about 36 hours after it
-    // landed. So the search walks backwards in chunks to a floor instead of
-    // looking at one window.
+    // Read from Blockscout's index, not an RPC. No free RPC will serve a log
+    // this old: drpc answered 408 and then refused to route it at all,
+    // cloudflare caps the range far below a single day, and publicnode wants a
+    // token for anything archival. The first real donation had already fallen
+    // off this page because of it.
     //
-    // And every configId goes into topic[1] as an OR rather than one query per
-    // charity: identical results, an eighth of the requests, which is what makes
-    // walking back affordable at all.
-    const withFwd = CONFIG.charities.filter((c) => c.forwarder);
-    if (withFwd.length) {
-      const byConfig = new Map(withFwd.map((c) => [c.configId.toLowerCase(), c]));
+    // The relay is shared with every other donate.gg user, so filtering by
+    // configId alone also returns strangers' donations — there is one for
+    // 0.054 ETH to St. Jude that has nothing to do with us. Only logs whose
+    // creditedTo matches our forwarders' are counted. That is the difference
+    // between our ledger and donate.gg's.
+    const CREDITED = (CONFIG.creditedTo || "").toLowerCase();
+    for (const c of CONFIG.charities) {
+      if (!c.forwarder) continue;
       try {
-        const head = Number(big(await call(L1_RPC, "eth_blockNumber", [])));
-        const floor = Math.max(CONFIG.l1FirstBlock || 0, head - CHUNK * MAX_CHUNKS);
-        const ranges = [];
-        for (let to = head - 30; to > floor; to -= CHUNK) {
-          ranges.push([Math.max(floor, to - CHUNK + 1), to]);
+        const url = `${CONFIG.l1Index}?module=logs&action=getLogs` +
+          `&fromBlock=${CONFIG.l1FirstBlock}&toBlock=latest&address=${RELAY}` +
+          `&topic0=${TOPIC.donationMade}&topic0_1_opr=and&topic1=${c.configId}`;
+        const j = await (await fetch(url)).json();
+        const logs = Array.isArray(j.result) ? j.result : [];
+
+        // Reached the index, so this charity can show a real total, zero included.
+        byCharity[c.id] = 0n;
+        const now = Date.now() / 1000;
+
+        for (const l of logs) {
+          if ("0x" + wordAt(l.data, 0).slice(24) !== CREDITED) continue;
+          const amount = big("0x" + wordAt(l.data, 1));
+          delivered += amount;
+          byCharity[c.id] += amount;
+          rows.push({
+            kind: "done", amount,
+            title: `Donated to ${c.short}`,
+            note: "credited on Ethereum",
+            // The index gives a real timestamp, so age is measured rather than
+            // estimated from a block number and an assumed block time.
+            secs: Math.max(0, now - parseInt(l.timeStamp, 16)),
+            href: `https://etherscan.io/tx/${l.transactionHash}`,
+          });
         }
-
-        // A charity we managed to query shows a real total, including zero.
-        withFwd.forEach((c) => { byCharity[c.id] = 0n; });
-
-        // One at a time. Firing even four of these at once made the free
-        // endpoint answer 408, the chunk was silently dropped, and the ledger
-        // rendered empty while the same query by hand returned the donation.
-        for (const [from, to] of ranges) {
-          const logs = await call(L1_RPC, "eth_getLogs", [{
-            fromBlock: "0x" + from.toString(16),
-            toBlock: "0x" + to.toString(16),
-            address: RELAY,
-            topics: [TOPIC.donationMade, [...byConfig.keys()]],
-          }]).catch(() => []);
-
-          {
-            for (const l of logs) {
-              const c = byConfig.get((l.topics[1] || "").toLowerCase());
-              if (!c) continue;
-              const amount = big("0x" + wordAt(l.data, 1));
-              delivered += amount;
-              byCharity[c.id] += amount;
-              rows.push({
-                kind: "done", amount,
-                title: `Donated to ${c.short}`,
-                note: "credited on Ethereum",
-                secs: (head - Number(big(l.blockNumber))) * ETH_SECONDS_PER_BLOCK,
-                href: `https://etherscan.io/tx/${l.transactionHash}`,
-              });
-            }
-          }
-        }
-      } catch { /* relay unreadable; the cards keep their em dash */ }
+      } catch { /* index unreadable; the card keeps its em dash */ }
     }
 
     // campaign launches, from the factory itself

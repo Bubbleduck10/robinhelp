@@ -27,7 +27,15 @@ const CONFIG = {
   // The first donation landed at Ethereum block 25,893,523. Nothing our relay
   // query cares about exists before this, so the backwards walk stops here
   // rather than scanning the chain.
-  l1FirstBlock: 25893000,
+  // Donations are read from Blockscout's index, not an RPC: no free RPC
+  // will serve a log more than a few hours old.
+  l1Index: "https://eth.blockscout.com/api",
+  l1FirstBlock: 25000000,
+
+  // Our forwarders all carry this as creditedTo. donate.gg's relay is shared
+  // with every other user of it, so this is what separates a donation our
+  // contracts caused from a stranger's to the same charity.
+  creditedTo: "0xb7558a46F3c791302fF7ba4DC051390c8F359F37",
 
   // Rollup facts, used for the honest "in transit" copy.
   challengePeriodDays: 6.36,
