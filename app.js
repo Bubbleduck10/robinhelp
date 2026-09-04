@@ -39,18 +39,25 @@
   const call = async (url, method, params, tries = 3) => {
     let last;
     for (let i = 0; i < tries; i++) {
-      let r;
+      let j;
       try {
-        r = await fetch(url, {
+        const r = await fetch(url, {
           method: "POST", headers: { "content-type": "application/json" },
           body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
         });
-      } catch (e) {                    // CORS or network: try another node
+        // 408 and 429 are the free L1 endpoint saying "not right now", and 5xx
+        // is the node having a moment. Both are worth asking again. Other 4xx
+        // are the node's considered answer — a range it refuses, say — and the
+        // caller's own fallback handles those.
+        if (r.status === 408 || r.status === 429 || r.status >= 500) {
+          throw new Error("transient http " + r.status);
+        }
+        j = await r.json();
+      } catch (e) {                    // CORS, network, or a transient status
         last = e;
-        if (i < tries - 1) await new Promise((s) => setTimeout(s, 120 * (i + 1)));
+        if (i < tries - 1) await new Promise((s) => setTimeout(s, 250 * (i + 1)));
         continue;
       }
-      const j = await r.json();
       if (j.error) throw new Error(j.error.message);
       return j.result;
     }
@@ -271,17 +278,18 @@
         // A charity we managed to query shows a real total, including zero.
         withFwd.forEach((c) => { byCharity[c.id] = 0n; });
 
-        // Small groups: the free endpoint rate-limits a burst of 25 at once.
-        for (let i = 0; i < ranges.length; i += 4) {
-          const batch = await Promise.all(ranges.slice(i, i + 4).map(([from, to]) =>
-            call(L1_RPC, "eth_getLogs", [{
-              fromBlock: "0x" + from.toString(16),
-              toBlock: "0x" + to.toString(16),
-              address: RELAY,
-              topics: [TOPIC.donationMade, [...byConfig.keys()]],
-            }]).catch(() => [])));
+        // One at a time. Firing even four of these at once made the free
+        // endpoint answer 408, the chunk was silently dropped, and the ledger
+        // rendered empty while the same query by hand returned the donation.
+        for (const [from, to] of ranges) {
+          const logs = await call(L1_RPC, "eth_getLogs", [{
+            fromBlock: "0x" + from.toString(16),
+            toBlock: "0x" + to.toString(16),
+            address: RELAY,
+            topics: [TOPIC.donationMade, [...byConfig.keys()]],
+          }]).catch(() => []);
 
-          for (const logs of batch) {
+          {
             for (const l of logs) {
               const c = byConfig.get((l.topics[1] || "").toLowerCase());
               if (!c) continue;
