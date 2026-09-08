@@ -26,6 +26,7 @@
       ? (Number(c.held) / 1e18).toFixed(4)
       : null;
     box.innerHTML =
+      (c.img ? '<img class="hp-logo" src="' + c.img + '" alt="" width="52" height="52">' : "") +
       '<div class="hp-row"><span class="hp-tok">$' + c.sym + '</span>' +
       '<span class="hp-arrow">&rarr;</span>' +
       '<span class="hp-cha">' + (c.charity ? c.charity.short : "charity " + c.cid) + '</span></div>' +

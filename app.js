@@ -22,6 +22,7 @@
   const SEL = {
     campaignCount: "0x7274e30d", campaigns: "0x141961bc",
     vaultOf: "0x0709df45", charityOf: "0xac6f2f8a", symbol: "0x95d89b41",
+    logo: "0xfb7f21eb",
   };
 
   /* ---------------- plumbing ---------------- */
@@ -191,14 +192,24 @@
         const vault = addrAt(await ethCall(CONFIG.factory, SEL.vaultOf + pad(token)));
         const cid = Number(big(await ethCall(CONFIG.factory, SEL.charityOf + pad(token))));
         const sym = decodeString(await ethCall(token, SEL.symbol)) || "?";
+        // The token stores its own logo as an ipfs:// string. A campaign
+        // without one still lists; it just shows no image.
+        let logo = "";
+        try { logo = decodeString(await ethCall(token, SEL.logo)) || ""; } catch { /* older campaign */ }
+        const img = logo.startsWith("ipfs://")
+          ? CONFIG.ipfsGateway + logo.slice(7)
+          : (logo.startsWith("http") ? logo : "");
         const held = big(await rpc("eth_getBalance", [vault, "latest"]));
         const charity = CONFIG.charities.find((c) => c.id === cid);
-        campaignCache.push({ token, vault, cid, sym, charity, held });
+        campaignCache.push({ token, vault, cid, sym, charity, held, img });
 
         const el = document.createElement("div");
         el.className = "card";
         el.innerHTML =
-          `<span class="badge live">${charity ? charity.short : "charity " + cid}</span>` +
+          `<div class="ch-top">` +
+            (img ? `<img class="tok-logo" src="${img}" alt="" loading="lazy" width="44" height="44">` : `<span class="tok-logo none"></span>`) +
+            `<span class="badge live">${charity ? charity.short : "charity " + cid}</span>` +
+          `</div>` +
           `<div class="name">$${sym}</div>` +
           `<div class="cid">vault <a href="${CONFIG.explorer}/address/${vault}" target="_blank" rel="noopener">${short(vault)}</a></div>` +
           `<div class="cid">${eth(held)} ETH awaiting payout</div>` +

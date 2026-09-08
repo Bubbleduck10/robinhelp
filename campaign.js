@@ -62,6 +62,7 @@
   // Selectors and topics computed from their signatures, never recalled.
   const SEL = {
     getLaunchedToken: "0x3cf28b5a", vaultOf: "0x0709df45", charityOf: "0xac6f2f8a",
+    logo: "0xfb7f21eb",
     token: "0xfc0c546a",
     beneficiary: "0x38af3eed", name: "0x06fdde03", symbol: "0x95d89b41",
     totalSupply: "0x18160ddd", decimals: "0x313ce567",
@@ -108,6 +109,15 @@
     let decimals = 18;
     try {
       $("c-symbol").textContent = "$" + (decodeString(await ethCall(token, SEL.symbol)) || "?");
+      try {
+        const lg = decodeString(await ethCall(token, SEL.logo)) || "";
+        const src = lg.startsWith("ipfs://") ? CONFIG.ipfsGateway + lg.slice(7)
+                  : (lg.startsWith("http") ? lg : "");
+        if (src) {
+          const im = $("c-logo");
+          if (im) { im.src = src; im.hidden = false; }
+        }
+      } catch { /* campaigns launched before logos were required have none */ }
       $("c-name").textContent = decodeString(await ethCall(token, SEL.name)) || "Unnamed token";
       decimals = Number(big(await ethCall(token, SEL.decimals))) || 18;
       const sup = big(await ethCall(token, SEL.totalSupply));

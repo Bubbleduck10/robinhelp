@@ -712,3 +712,20 @@ footer a:hover { color: var(--black); }
 .camp-charity .v a { color: var(--ink, var(--black)); text-decoration: none; border-bottom: 2px solid var(--accent); }
 .camp-charity .v a:hover { border-bottom-color: var(--black); }
 .camp-charity .via { display: block; margin-top: 4px; font-family: var(--body); font-weight: 400; font-size: 12px; letter-spacing: 0; color: var(--grey-2); }
+
+/* Token logos -----------------------------------------------------------
+   The token stores its own logo as an ipfs:// CID, so these are the real
+   images from chain, not anything we hold. A campaign launched before logos
+   were required simply has none, and the slot collapses rather than showing
+   a broken image. */
+.tok-logo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover;
+            background: var(--wash); flex: none; }
+.tok-logo.none { display: none; }
+.hp-logo { width: 52px; height: 52px; border-radius: 14px; object-fit: cover;
+           display: block; margin-bottom: 14px; background: var(--card-2); }
+.camp-id { display: flex; align-items: center; gap: 18px; }
+.camp-logo { width: 72px; height: 72px; border-radius: 18px; object-fit: cover;
+             background: var(--wash); flex: none; }
+@media (max-width: 620px) {
+  .camp-logo { width: 56px; height: 56px; border-radius: 14px; }
+}

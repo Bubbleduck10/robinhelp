@@ -77,14 +77,21 @@ const CONFIG = {
   // token permanently, so a launch with no logo cannot be corrected later.
   pinEndpoint: "https://hoodhelper-pin.notejet.workers.dev",
 
+  // Where an ipfs:// logo is fetched from for display. Pinata is where we pin,
+  // so it is the gateway most likely to have the content hot.
+  ipfsGateway: "https://gateway.pinata.cloud/ipfs/",
+
   hiddenCampaigns: [
     "0xd61b931848642fe1f4e9772890a918988437533b",   // $TEST    pre-rebrand
     "0x004300f38e3ddb56abbdb19478c8d8fe1875c142",   // $STJUDE  pre-rebrand, outside launcher
     "0x049b29ff992b8c1682d0f9c62519996ba454455d",   // $TEST    no logo
     "0xf2a30d51b2004af68850503a971b74f89d6c94fd",   // $WATER   no logo
     "0xa08b396014d4161a3cc129772119d7708f1d8a5a",   // $WATER   no logo, duplicate ticker
-    "0x5a11db9fb8bb1a601acfb830cd707c1f01cb3e6d",   // $JUDE    "JUDE TEST", full-flow test
   ],
+
+  // $JUDE (0x5a11db9f…3e6d) is deliberately NOT hidden. It is the only campaign
+  // carrying a pinned logo and a campaign link in its metadata, so it is what
+  // the site looks like working. The rest predate both and are left off.
 
   // A campaign donates roughly this share of its trading volume: pons charges
   // 1% and keeps 30% of that, so the creator share is 0.7%. We take none of it.
