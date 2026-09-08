@@ -4,8 +4,11 @@
   const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
   const same = (a, b) => (a || "").toLowerCase() === (b || "").toLowerCase();
 
-  const token = new URLSearchParams(location.search).get("t");
-  if (!token || !/^0x[0-9a-fA-F]{40}$/.test(token)) {
+  const qs = new URLSearchParams(location.search);
+  let token = qs.get("t");
+  const byVault = qs.get("v");
+  const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(a || "");
+  if (!isAddr(token) && !isAddr(byVault)) {
     $("c-name").textContent = "No campaign specified.";
     return;
   }
@@ -25,6 +28,23 @@
   const pad = (a) => a.toLowerCase().replace(/^0x/, "").padStart(64, "0");
   const wordAt = (hex, i) => hex.replace(/^0x/, "").slice(i * 64, (i + 1) * 64);
   const addrOf = (word) => "0x" + word.slice(24);
+  const padUint = (n) => n.toString(16).padStart(64, "0");
+  const same2 = (a, b) => (a || "").toLowerCase() === (b || "").toLowerCase();
+
+  /* A launch cannot write its own token address into its own metadata: the
+     address is derived from the params, so putting it in the params changes it.
+     The vault comes from the factory nonce alone and is identical whatever else
+     is written, so a campaign link is keyed on the vault and resolved here.
+     Walks newest first, since a link is nearly always to a recent launch. */
+  const tokenForVault = async (v) => {
+    const n = Number(big(await ethCall(CONFIG.factory, SEL.campaignCount)));
+    for (let i = n - 1; i >= 0 && i > n - 80; i--) {
+      const t = addrOf(wordAt(await ethCall(CONFIG.factory, SEL.campaigns + padUint(i)), 0));
+      const vv = addrOf(wordAt(await ethCall(CONFIG.factory, SEL.vaultOf + pad(t)), 0));
+      if (same2(vv, v)) return t;
+    }
+    return null;
+  };
 
   const units = (v, dec = 18, dp = 4) => {
     const base = 10n ** BigInt(dec);
@@ -42,6 +62,7 @@
   // Selectors and topics computed from their signatures, never recalled.
   const SEL = {
     getLaunchedToken: "0x3cf28b5a", vaultOf: "0x0709df45", charityOf: "0xac6f2f8a",
+    campaignCount: "0x7274e30d", campaigns: "0x141961bc",
     beneficiary: "0x38af3eed", name: "0x06fdde03", symbol: "0x95d89b41",
     totalSupply: "0x18160ddd", decimals: "0x313ce567",
   };
@@ -74,6 +95,15 @@
 
   /* ---------------- identity + the verification that matters ---------------- */
   const load = async () => {
+    // Arrived by vault (the form embeds that, not the token): resolve once.
+    if (!isAddr(token)) {
+      $("c-name").textContent = "Finding this campaign…";
+      token = await tokenForVault(byVault).catch(() => null);
+      if (!isAddr(token)) {
+        $("c-name").textContent = "That campaign is not on this launchpad.";
+        return;
+      }
+    }
     // token identity
     let decimals = 18;
     try {
@@ -106,7 +136,15 @@
     }
     const known = vault && !/^0x0+$/.test(vault);
 
-    $("c-charity").textContent = charity ? charity.short : "not a launchpad campaign";
+    if (charity) {
+      // The coin now links here rather than straight to donate.gg, so this page
+      // has to carry the onward link the metadata used to.
+      $("c-charity").innerHTML =
+        `<a href="${charity.url}" target="_blank" rel="noopener">${charity.short}</a>` +
+        `<span class="via">via donate.gg</span>`;
+    } else {
+      $("c-charity").textContent = "not a launchpad campaign";
+    }
 
     // Three independent checks. All must hold for the claim to be true.
     const cRecipient = known && same(feeRecipient, vault);

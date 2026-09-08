@@ -45,10 +45,9 @@
   };
 
   // Order is twitter, telegram, discord, website, farcaster. The website slot
-  // carries the campaign's charity: a donate.gg page publishes the very config
-  // ID the payout routes under, so the coin's own metadata points at what it is
-  // funding — and at a routing page rather than the charity's own site, which
-  // would read as an endorsement nobody gave.
+  // carries this campaign's own page on our site, which names the charity and
+  // links onward to its donate.gg config. Pointing straight at donate.gg lost
+  // the on-chain proof that sits between the coin and the charity.
   const encodeSocials = (twitter, website) =>
     tuple([twitter, "", "", website, ""].map((s) => ({ dyn: true, v: encStr(s) })));
 
@@ -368,14 +367,39 @@
       const salt = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
         .map((b) => b.toString(16).padStart(2, "0")).join("");
 
-      // The coin carries its charity in its own metadata, so the link survives
-      // anywhere the token is listed, not only on this site.
+      /* The coin needs to link to its own campaign page, but it cannot carry
+         its own token address: the address is derived from the params, so
+         writing it into them changes it. The vault is derived from the
+         factory nonce alone and is identical whatever else we write, so the
+         launch is simulated first to learn it, and the link is keyed on that.
+
+         If the simulation fails, or someone else launches in between and the
+         nonce moves, the link would be wrong — permanently. So a failed
+         simulation falls back to the charity page rather than guessing. */
+      status("Checking the launch…");
+      let website = "";
+      try {
+        const probe = await rpcCall("eth_call", [{
+          from, to: CONFIG.factory,
+          data: encodeLaunch({ name, symbol, logo: "ipfs://" + cid,
+            description: $("f-desc").value.trim(),
+            twitter: $("f-x").value.trim(), website: "", salt },
+            LAUNCH_CONFIG_ID, Number(sel.value)),
+          value: "0x" + LAUNCH_FEE.toString(16),
+        }, "latest"]);
+        const vault = "0x" + probe.slice(2).slice(64 + 24, 128);
+        if (/^0x[0-9a-f]{40}$/i.test(vault) && !/^0x0+$/.test(vault)) {
+          website = CONFIG.site + "/campaign.html?v=" + vault;
+        }
+      } catch { /* fall through to the charity page */ }
+
       const picked = CONFIG.charities.find((c) => c.id === Number(sel.value));
+      if (!website) website = picked ? picked.url : "";
       const data = encodeLaunch({
         name, symbol, logo: "ipfs://" + cid,
         description: $("f-desc").value.trim(),
         twitter: $("f-x").value.trim(),
-        website: picked ? picked.url : "",
+        website,
         salt,
       }, LAUNCH_CONFIG_ID, Number(sel.value));
 
