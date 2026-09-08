@@ -28,22 +28,22 @@
   const pad = (a) => a.toLowerCase().replace(/^0x/, "").padStart(64, "0");
   const wordAt = (hex, i) => hex.replace(/^0x/, "").slice(i * 64, (i + 1) * 64);
   const addrOf = (word) => "0x" + word.slice(24);
-  const padUint = (n) => n.toString(16).padStart(64, "0");
-  const same2 = (a, b) => (a || "").toLowerCase() === (b || "").toLowerCase();
 
   /* A launch cannot write its own token address into its own metadata: the
-     address is derived from the params, so putting it in the params changes it.
-     The vault comes from the factory nonce alone and is identical whatever else
-     is written, so a campaign link is keyed on the vault and resolved here.
-     Walks newest first, since a link is nearly always to a recent launch. */
+     address is derived from the params, so putting it in the params changes
+     it. The vault comes from the factory nonce alone and is identical
+     whatever else is written, so a campaign link is keyed on the vault.
+
+     The vault stores its own token, so this is one call. An earlier version
+     walked the launchpad campaign list comparing vaultOf for each — two
+     calls per campaign, enough extra traffic on this RPC to get rate-limited
+     before the page had read anything.
+
+     This is a lookup, not a proof. Everything below still verifies the token
+     independently, so a vault naming the wrong token gets no further. */
   const tokenForVault = async (v) => {
-    const n = Number(big(await ethCall(CONFIG.factory, SEL.campaignCount)));
-    for (let i = n - 1; i >= 0 && i > n - 80; i--) {
-      const t = addrOf(wordAt(await ethCall(CONFIG.factory, SEL.campaigns + padUint(i)), 0));
-      const vv = addrOf(wordAt(await ethCall(CONFIG.factory, SEL.vaultOf + pad(t)), 0));
-      if (same2(vv, v)) return t;
-    }
-    return null;
+    const t = addrOf(wordAt(await ethCall(v, SEL.token), 0));
+    return /^0x0+$/.test(t) ? null : t;
   };
 
   const units = (v, dec = 18, dp = 4) => {
@@ -62,7 +62,7 @@
   // Selectors and topics computed from their signatures, never recalled.
   const SEL = {
     getLaunchedToken: "0x3cf28b5a", vaultOf: "0x0709df45", charityOf: "0xac6f2f8a",
-    campaignCount: "0x7274e30d", campaigns: "0x141961bc",
+    token: "0xfc0c546a",
     beneficiary: "0x38af3eed", name: "0x06fdde03", symbol: "0x95d89b41",
     totalSupply: "0x18160ddd", decimals: "0x313ce567",
   };
