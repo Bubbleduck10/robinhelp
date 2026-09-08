@@ -44,8 +44,13 @@
     return head + tail;
   };
 
-  const encodeSocials = (twitter) =>
-    tuple([twitter, "", "", "", ""].map((s) => ({ dyn: true, v: encStr(s) })));
+  // Order is twitter, telegram, discord, website, farcaster. The website slot
+  // carries the campaign's charity: a donate.gg page publishes the very config
+  // ID the payout routes under, so the coin's own metadata points at what it is
+  // funding — and at a routing page rather than the charity's own site, which
+  // would read as an endorsement nobody gave.
+  const encodeSocials = (twitter, website) =>
+    tuple([twitter, "", "", website, ""].map((s) => ({ dyn: true, v: encStr(s) })));
 
   const encodeLaunch = (p, configId, charityId) => {
     const params = tuple([
@@ -53,7 +58,7 @@
       { dyn: true, v: encStr(p.symbol) },
       { dyn: true, v: encStr(p.logo || "") },
       { dyn: true, v: encStr(p.description || "") },
-      { dyn: true, v: encodeSocials(p.twitter || "") },
+      { dyn: true, v: encodeSocials(p.twitter || "", p.website || "") },
       { dyn: false, v: encAddr("0x0000000000000000000000000000000000000000") }, // factory overwrites
       { dyn: false, v: encUint(0) },                                            // creatorTaxBps
       { dyn: false, v: encBool(false) },                                        // buybackEnabled
@@ -72,6 +77,7 @@
   const REFERENCE_INPUT = {
     name: "MyCoin", symbol: "MYC", logo: "", description: "For a cause",
     twitter: "https://x.com/me",
+    website: "https://www.donate.gg/charities/water-aid",
     salt: "0x69597a984565240a8fd8f181606000216c27ea03573f14bedf28349370dbae88",
   };
   const REFERENCE_OUTPUT =
@@ -81,9 +87,9 @@
     "0000000000000000000000000000000000000000000000000000000000000002";
   const verifyEncoder = () => {
     const got = encodeLaunch(REFERENCE_INPUT, 0, 2);
-    const ok = got.slice(0, REFERENCE_OUTPUT.length) === REFERENCE_OUTPUT && got.length === 1994;
+    const ok = got.slice(0, REFERENCE_OUTPUT.length) === REFERENCE_OUTPUT && got.length === 2122;
     console[ok ? "log" : "error"](
-      ok ? "launch encoder: matches reference (997 bytes)"
+      ok ? "launch encoder: matches reference (1060 bytes)"
          : "launch encoder: MISMATCH — do not launch", { got: got.length });
     return ok;
   };
@@ -282,10 +288,14 @@
       const salt = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
         .map((b) => b.toString(16).padStart(2, "0")).join("");
 
+      // The coin carries its charity in its own metadata, so the link survives
+      // anywhere the token is listed, not only on this site.
+      const picked = CONFIG.charities.find((c) => c.id === Number(sel.value));
       const data = encodeLaunch({
         name, symbol, logo: "",
         description: $("f-desc").value.trim(),
         twitter: $("f-x").value.trim(),
+        website: picked ? picked.url : "",
         salt,
       }, LAUNCH_CONFIG_ID, Number(sel.value));
 
