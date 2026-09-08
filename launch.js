@@ -147,7 +147,11 @@
 
   const BUY_SEL   = "0x59a87bc1";   // buy(uint256,uint256,address)
   const CURVE_SEL = "0x7165485d";   // curve()
-  const SLIPPAGE_BPS = 500n;        // 5%, against a sandwich on a fresh curve
+  // The quote is simulated at click time, so the buyer's own price impact is
+  // already priced in; this tolerance only covers state changing between the
+  // quote and inclusion — someone else buying first. On a launch that is the
+  // likely case, and a revert costs gas for nothing, so it is set wide.
+  const SLIPPAGE_BPS = 1500n;       // 15%
 
   const rpcCall = async (method, params) => {
     const r = await fetch(CONFIG.rpc, {
@@ -232,7 +236,7 @@
           const out = await quote(amt);
           $("b-quote").textContent =
             "≈ " + fmtUnits(out, 2) + " " + symbol + "  ·  min " +
-            fmtUnits(out - (out * SLIPPAGE_BPS) / 10000n, 2) + " after 5% slippage";
+            fmtUnits(out - (out * SLIPPAGE_BPS) / 10000n, 2) + " if someone buys first";
         } catch { $("b-quote").textContent = "Could not quote that amount."; }
       }, 350);
     });
