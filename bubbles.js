@@ -54,20 +54,20 @@
     const g = ctx.createRadialGradient(
       b.x - b.r * 0.35, b.y - b.r * 0.4, b.r * 0.05,
       b.x, b.y, b.r);
-    g.addColorStop(0, `rgba(120,255,150,${b.alpha * 0.55})`);
-    g.addColorStop(0.55, `rgba(0,200,5,${b.alpha * 0.22})`);
-    g.addColorStop(1, `rgba(0,200,5,0)`);
+    g.addColorStop(0, `rgba(16,113,58,${b.alpha * 0.10})`);
+    g.addColorStop(0.55, `rgba(16,113,58,${b.alpha * 0.05})`);
+    g.addColorStop(1, `rgba(16,113,58,0)`);
     ctx.fillStyle = g;
     ctx.fill();
 
-    ctx.strokeStyle = `rgba(0,200,5,${b.alpha * 0.85})`;
+    ctx.strokeStyle = `rgba(16,113,58,${b.alpha * 0.22})`;
     ctx.lineWidth = Math.max(0.6, b.r * 0.035);
     ctx.stroke();
 
     if (b.r > 9) {
       ctx.beginPath();
       ctx.arc(b.x - b.r * 0.33, b.y - b.r * 0.36, Math.max(0.8, b.r * 0.11), 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(190,255,205,${b.alpha * 1.5})`;
+      ctx.fillStyle = `rgba(16,113,58,${b.alpha * 0.16})`;
       ctx.fill();
     }
   };

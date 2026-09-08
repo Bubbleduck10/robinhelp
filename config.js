@@ -2,9 +2,9 @@
 // Charity launchpad — edit this block only.
 // ============================================================
 const CONFIG = {
-  name: "Helping Hand",
+  name: "Hood Helper",
   tagline: "Memecoins whose fees can only reach a charity.",
-  x: "https://x.com/Helpinghandrh",
+  x: "https://x.com/hoodhelperrh",
 
   // ---- chain: Robinhood Chain (Arbitrum Orbit, id 4663) ----
   chain: "robinhood",       // DexScreener chainId
@@ -38,21 +38,21 @@ const CONFIG = {
   creditedTo: "0xb7558a46F3c791302fF7ba4DC051390c8F359F37",
 
   // Rollup facts, used for the honest "in transit" copy.
-  challengePeriodDays: 6.36,
+  challengePeriodDays: 6,
 
   // ---- the project's own token ----
   // Launched separately from AD4c, not through the launchpad: its fees are the
   // project's, not a charity's. Left empty until it exists — the panel then says
   // so rather than showing a chart of nothing.
   mainToken: {
-    symbol: "Helping",
-    address: "0x8b2d3cB9b0c0bd66116e541fafF5c73501F2c1F2",
-    launched: true,
-    // Launched through the pons form, which defaults creator tax to 1% — the
-    // same default that caught the previous token. So a trade pays 2% total.
-    // Snapshotted at launch with no setter, so it is stated rather than
-    // quietly carried.
-    tradeFeeNote: "2% per trade — 1% curve fee, 1% creator tax. Fixed at launch.",
+    symbol: "charity",
+    address: "",
+    launched: false,
+    // Set both of these from the new launch. The retired $Helping token had a
+    // 2% total fee — 1% curve, 1% creator tax — because the pons form defaults
+    // creator tax to 1%. Watch for that again: it is immutable, and it has
+    // caught every launch so far.
+    tradeFeeNote: "",
   },
 
   // Campaigns the site does not list. The factory's `campaigns` array is

@@ -1,4 +1,4 @@
-/* Helping Hand — everything on this page is read from chain, not typed in. */
+/* Hood Helper — everything on this page is read from chain, not typed in. */
 (() => {
   const $ = (id) => document.getElementById(id);
   const short = (a) => a.slice(0, 6) + "…" + a.slice(-4);
@@ -117,7 +117,6 @@
   };
 
   /* ---------------- static bits ---------------- */
-  $("chain-chip").innerHTML = '<i class="pulse"></i>' + CONFIG.chainName;
   $("lim-days").textContent = CONFIG.challengePeriodDays;
   $("t-sym").textContent = CONFIG.mainToken.symbol;
   if (CONFIG.mainToken.tradeFeeNote) $("t-fee").textContent = CONFIG.mainToken.tradeFeeNote;
@@ -194,7 +193,7 @@
         const sym = decodeString(await ethCall(token, SEL.symbol)) || "?";
         const held = big(await rpc("eth_getBalance", [vault, "latest"]));
         const charity = CONFIG.charities.find((c) => c.id === cid);
-        campaignCache.push({ token, vault, cid, sym, charity });
+        campaignCache.push({ token, vault, cid, sym, charity, held });
 
         const el = document.createElement("div");
         el.className = "card";
@@ -203,7 +202,7 @@
           `<div class="name">$${sym}</div>` +
           `<div class="cid">vault <a href="${CONFIG.explorer}/address/${vault}" target="_blank" rel="noopener">${short(vault)}</a></div>` +
           `<div class="cid">${eth(held)} ETH awaiting payout</div>` +
-          `<a href="campaign.html?t=${token}" style="font-size:.86rem">Open campaign ›</a>`;
+          `<a class="ch-link" href="campaign.html?t=${token}">Open campaign ›</a>`;
         list.appendChild(el);
       } catch { /* skip one we can't read */ }
     }

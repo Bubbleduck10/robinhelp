@@ -3,61 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Helping Hand — fees that can only reach a charity</title>
+<title>Hood Helper — fees that can only reach a charity</title>
 <meta name="description" content="Launch a memecoin on Robinhood Chain. Its creator fees are locked to a charity by the contract itself — not by a promise, and not by us holding a key.">
-<meta property="og:title" content="Helping Hand">
-<meta property="og:image" content="https://helpinghandrh.com/brand/banner.png">
+<meta property="og:title" content="Hood Helper">
+<meta property="og:image" content="https://helpinghandrh.com/brand/banner.png?v=2">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:description" content="Memecoin fees that can only reach a charity. No owner, no withdraw, no key.">
-<link rel="icon" href="brand/logo.svg" type="image/svg+xml">
-<link rel="icon" href="brand/favicon-64.png" sizes="64x64" type="image/png">
-<link rel="apple-touch-icon" href="brand/favicon-180.png">
+<link rel="icon" href="brand/favicon-64.png?v=2" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="brand/favicon-180.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=30">
 </head>
-<body>
+<body class="motion">
 
-<canvas id="bubbles" aria-hidden="true"></canvas>
-
+<div class="sky">
 <header class="bar">
   <div class="wrap bar-in">
-    <a class="mark" href="./">Helping&nbsp;Hand</a>
-    <span class="chip" id="chain-chip"><i class="pulse"></i>Robinhood Chain</span>
+    <a class="mark" href="./"><img src="brand/mark.png?v=2" alt="" width="28" height="28">Hood&nbsp;Helper</a>
     <nav class="nav">
-      <a href="#token">$Helping</a>
-      <a href="#campaigns">Campaigns</a>
-      <a href="#ledger">Donations</a>
       <a href="#how">How it works</a>
-      <a href="#why">Why</a>
-      <a href="https://x.com/Helpinghandrh" target="_blank" rel="noopener">X</a>
-      <a href="#launch" class="btn sm">Launch a coin</a>
+      <a href="#campaigns">Campaigns</a>
+      <a href="#token">$charity</a>
+      <a href="https://x.com/hoodhelperrh" target="_blank" rel="noopener">@hoodhelperrh</a>
+      <a href="#launch" class="btn">Launch a coin</a>
     </nav>
   </div>
 </header>
 
-<div id="ticker" aria-label="Live from chain"><div id="tick-track"></div></div>
-
 <section class="hero">
-  <div class="glowfield" aria-hidden="true"></div>
-  <div class="wrap hero-in">
-    <p class="eyebrow">Trading fees → charity, enforced by code</p>
-    <h1>The fees can't reach<br>anyone but the charity.</h1>
-    <p class="lede">Launch a memecoin and pick a cause. Its creator fees go to a vault that is
-    <em>structurally incapable</em> of paying anybody else — not the person who launched it, and
-    not us. That isn't a policy we could revise. It's the absence of a function.</p>
-
-    <div class="cta">
-      <a href="#launch" class="btn">Launch a coin ›</a>
-      <a href="#how" class="btn ghost">See why it holds ›</a>
+  <div class="wrap">
+    <div>
+      <p class="kicker">Trading fees → charity, enforced by code. On Robinhood Chain.</p>
+      <h1>The fees only<br class="br-wide"> go one way.</h1>
+      <p class="lede">Launch a memecoin and pick a cause. Its creator fees go to a vault that is
+      <em>structurally incapable</em> of paying anybody else — not the person who launched it, and
+      not us. That isn't a policy we could revise. It's the absence of a function.</p>
+      <div class="cta">
+        <a href="#launch" class="btn go">Launch a coin</a>
+        <span class="note">0.0005 ETH to launch. 0% to us — no fee parameter exists.</span>
+      </div>
     </div>
 
-    <div class="stats" id="stats">
-      <div class="stat"><span class="k">Donated</span><span class="v" id="s-donated">—</span><span class="n">to charities</span></div>
-      <div class="stat"><span class="k">Left the vaults</span><span class="v" id="s-transit">—</span><span class="n">released to charities</span></div>
-      <div class="stat"><span class="k">Campaigns</span><span class="v" id="s-campaigns">—</span><span class="n">live on chain</span></div>
-      <div class="stat"><span class="k">Our cut</span><span class="v ok">0%</span><span class="n">no fee parameter exists</span></div>
+    <div class="tile">
+      <div class="tile-cap">
+        <span>A campaign, right now.</span>
+      </div>
+      <div class="card" id="hero-campaign">
+        <p class="hp-wait">Reading a campaign from chain…</p>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<section class="statband">
+  <div class="wrap" id="stats">
+    <div class="stat"><span class="k">Donated</span><span class="v" id="s-donated">—</span><span class="n">to charities</span></div>
+    <div class="stat"><span class="k">Left the vaults</span><span class="v" id="s-transit">—</span><span class="n">released to charities</span></div>
+    <div class="stat"><span class="k">Campaigns</span><span class="v" id="s-campaigns">—</span><span class="n">live on chain</span></div>
+    <div class="stat"><span class="k">Our cut</span><span class="v ok">0%</span><span class="n">no fee parameter exists</span></div>
+  </div>
+</section>
+
+<!-- The sequence, told once, as the page scrolls through it. -->
+<section class="story" id="story">
+  <div class="story-sticky">
+    <div class="story-copy">
+      <h2>The fees can't reach anyone but the charity.</h2>
+      <div class="story-steps">
+        <p>A trade pays a creator fee.</p>
+        <p>The fee lands in a vault.</p>
+        <p>The vault has one exit.</p>
+      </div>
+      <div class="storybar"><i id="storybar-fill"></i></div>
+    </div>
+
+    <div class="stage">
+      <div class="frame">
+        <div class="card">
+          <div class="fr-top"><b>$SHARK</b><span>someone buys</span></div>
+          <div class="fr-line">
+            <p>1% protocol fee on the trade. The creator share accrues on the curve — about 0.7%
+            of everything traded.</p>
+            <span class="fr-tag">Fee accrued</span>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="card">
+          <div class="fr-top"><b>Vault</b><span>no owner</span></div>
+          <div class="fr-line">
+            <p>The vault launched the coin, so it is both deployer and fee recipient. It has no
+            withdraw, no admin, and no upgrade path.</p>
+            <span class="fr-tag">One exit, fixed at birth</span>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="card">
+          <div class="fr-top"><b>St. Jude</b><span>on Ethereum</span></div>
+          <div class="fr-line">
+            <p>Anyone can trigger the payout. It crosses the bridge and is donated under the
+            charity's own config ID.</p>
+            <span class="fr-tag">Settled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ how it works ============ -->
+<section class="band">
+  <div class="wrap">
+    <div>
+      <h3>Launch a coin, pick a cause.</h3>
+      <p>Pay the protocol's <code>0.0005 ETH</code> fee. The charity is written into the coin as it
+      deploys and there is no function to change it afterwards.</p>
+    </div>
+    <div>
+      <h3>Its fees collect in a vault.</h3>
+      <p>Every trade pays a fee, and the creator share lands in a vault whose only exit is the
+      charity you picked — roughly <code>0.7%</code> of everything traded.</p>
+    </div>
+    <div>
+      <h3>Anyone can trigger the payout.</h3>
+      <p>Not just you, and not only us. The vault has no function capable of paying anybody else,
+      so a payout is never waiting on our permission.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ every campaign ============ -->
+<section class="panel" id="campaigns">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <h2>Every campaign</h2>
+        <p class="sub tight">Every coin launched through Hood Helper, read from the launchpad
+        contract on each load. Each one has its own vault, and each vault's charity was fixed the
+        moment it deployed.</p>
+      </div>
+      <span class="chip" id="campaign-src">reading chain…</span>
+    </div>
+
+    <div class="marquee" id="camp-marquee" hidden><div class="pills" id="camp-pills"></div></div>
+
+    <div id="campaign-list" class="cards">
+      <p class="empty">No campaigns yet. The first one launched will appear here, read live from chain.</p>
     </div>
   </div>
 </section>
@@ -67,14 +162,14 @@
   <div class="wrap">
     <div class="sec-head">
       <div>
-        <h2>$<span id="t-sym">Helping</span></h2>
+        <h2>$<span id="t-sym">charity</span></h2>
         <p class="sub tight">The project's own token, launched separately from the launchpad. Its
-        creator fees fund Helping Hand itself — the audit, the launch form, hosting, and the work to
+        creator fees fund Hood Helper itself — the audit, the launch form, hosting, and the work to
         add more charities and more chains. They do not go to a charity, and we would rather say
-        that plainly than let it blur into the campaigns below.</p>
+        that plainly than let it blur into the campaigns above.</p>
         <p class="sub tight" id="t-fee"></p>
       </div>
-      <a id="t-buy" class="btn ghost sm" target="_blank" rel="noopener" hidden>Trade ›</a>
+      <a id="t-buy" class="btn ghost sm" target="_blank" rel="noopener" hidden>Trade</a>
     </div>
 
     <div class="chartwrap">
@@ -96,7 +191,7 @@
 </section>
 
 <!-- ============ the donation ledger ============ -->
-<section class="panel alt" id="ledger">
+<section class="panel" id="ledger">
   <div class="wrap">
     <div class="sec-head">
       <div>
@@ -133,9 +228,11 @@
   </div>
 </section>
 
-<section class="panel alt" id="how">
+<section class="panel" id="how">
   <div class="wrap">
-    <h2>How it works</h2>
+    <h2>Why it can't be redirected</h2>
+    <p class="sub">Three routes could divert a campaign's fees. The design closes all three, and the
+    tests check each one.</p>
 
     <div class="diagram">
       <svg viewBox="0 0 900 232" role="img"
@@ -166,7 +263,7 @@
         <rect class="d-node" x="468" y="30" width="165" height="76" rx="11"/>
         <text class="d-step" x="486" y="52">03</text>
         <text class="d-title" x="486" y="72">Bridge</text>
-        <text class="d-sub" x="486" y="90">to Ethereum, ~6.36 days</text>
+        <text class="d-sub" x="486" y="90">to Ethereum, ~6 days</text>
 
         <!-- 04 charity -->
         <rect class="d-node" x="698" y="30" width="165" height="76" rx="11"/>
@@ -197,9 +294,6 @@
     </div>
 
     <div class="proof">
-      <h3>Why it can't be redirected</h3>
-      <p>Three routes could divert a campaign's fees. The design closes all three, and the tests
-      check each one.</p>
       <table class="tbl">
         <thead><tr><th>Route</th><th>Closed by</th></tr></thead>
         <tbody>
@@ -226,7 +320,7 @@
     all of it goes to the charity.</p>
 
     <p class="fine">What stays outside our control, in full: payouts take
-    <strong id="lim-days">6.36</strong> days, the challenge period on the chain's own bridge. The
+    <strong id="lim-days">6</strong> days, the challenge period on the chain's own bridge. The
     pons protocol owner can move a token's fee recipient, but only in public and only after a
     <strong>3-day timelock</strong>. donate.gg, whose relay receives the final donation, can upgrade
     that contract. And our contracts have not been reviewed by anyone outside this project — they
@@ -234,24 +328,7 @@
   </div>
 </section>
 
-<section class="panel" id="campaigns">
-  <div class="wrap">
-    <div class="sec-head">
-      <div>
-        <h2>Every campaign</h2>
-        <p class="sub tight">Every coin launched through Helping Hand, read from the launchpad
-        contract on each load. Each one has its own vault, and each vault's charity was fixed the
-        moment it deployed.</p>
-      </div>
-      <span class="chip" id="campaign-src">reading chain…</span>
-    </div>
-    <div id="campaign-list" class="cards">
-      <p class="empty">No campaigns yet. The first one launched will appear here, read live from chain.</p>
-    </div>
-  </div>
-</section>
-
-<section class="panel alt" id="why">
+<section class="panel" id="why">
   <div class="wrap narrow">
     <h2>Why we are doing this</h2>
     <p class="sub">Memecoins move a startling amount of money and produce nothing. We wanted to
@@ -334,7 +411,7 @@
         of paying anyone else.</p>
       </div>
 
-      <button class="btn" id="l-go" type="submit">Connect wallet &amp; launch ›</button>
+      <button class="btn go" id="l-go" type="submit">Connect wallet &amp; launch</button>
       <p class="lstatus" id="l-status"></p>
     </form>
   </div>
@@ -342,25 +419,29 @@
 
 <footer>
   <div class="wrap foot">
+    <div>
     <p class="fine"><strong>These are memecoins. Nothing here is financial advice, and you should
     expect to lose what you put in.</strong> The charity routing is real and verifiable on chain;
     the price of a memecoin is not a donation receipt, and buying one is not tax deductible.</p>
     <p class="fine">Charities are named because funds route to them through donate.gg. Naming does
     not imply they endorse this project.</p>
-    <p class="fine"><strong>Helping Hand is not affiliated with, endorsed by, or connected to
+    <p class="fine"><strong>Hood Helper is not affiliated with, endorsed by, or connected to
     Robinhood Markets, Inc.</strong> We build on Robinhood Chain, a public blockchain, in the same
     way anyone can. The name and the colours are ours, not theirs.</p>
-    <p class="fine">
-      <a href="https://x.com/Helpinghandrh" target="_blank" rel="noopener">@Helpinghandrh</a>
-      <span id="contracts"></span>
-    </p>
+    <p class="fine"><span id="contracts"></span></p>
+    </div>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#charities">Charities</a>
+      <a href="#why">Why</a>
+      <a href="https://x.com/hoodhelperrh" target="_blank" rel="noopener">@hoodhelperrh</a>
+    </nav>
   </div>
 </footer>
 
-<script src="bubbles.js?v=2" defer></script>
-<script src="config.js?v=21"></script>
-<script src="app.js?v=25"></script>
-<script src="polish.js?v=1" defer></script>
+<script src="config.js?v=24"></script>
+<script src="app.js?v=29"></script>
+<script src="polish.js?v=5" defer></script>
 <script src="launch.js?v=1"></script>
 </body>
 </html>

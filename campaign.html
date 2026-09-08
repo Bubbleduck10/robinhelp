@@ -3,27 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Campaign — Helping Hand</title>
+<title>Campaign — Hood Helper</title>
 <meta name="description" content="A campaign coin, its charity, and on-chain proof of where its fees can go.">
-<link rel="icon" href="brand/logo.svg" type="image/svg+xml">
-<link rel="icon" href="brand/favicon-64.png" sizes="64x64" type="image/png">
-<link rel="apple-touch-icon" href="brand/favicon-180.png">
+<link rel="icon" href="brand/favicon-64.png?v=2" sizes="64x64" type="image/png">
+<link rel="apple-touch-icon" href="brand/favicon-180.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=30">
 </head>
 <body>
 
+<div class="sky">
 <header class="bar">
   <div class="wrap bar-in">
-    <a class="mark" href="./">Helping&nbsp;Hand</a>
-    <span class="chip" id="chain-chip">Robinhood Chain</span>
+    <a class="mark" href="./"><img src="brand/mark.png?v=2" alt="" width="28" height="28">Hood&nbsp;Helper</a>
     <nav class="nav">
       <a href="./#campaigns">Campaigns</a>
       <a href="./#charities">Charities</a>
       <a href="./#how">How it works</a>
-      <a href="./" class="btn sm">All campaigns</a>
+      <a href="./" class="btn">All campaigns</a>
     </nav>
   </div>
 </header>
@@ -44,6 +43,7 @@
     <p class="addr" id="c-address">—</p>
   </div>
 </section>
+</div>
 
 <!-- The point of the page. Nothing here is asserted; it is all checked. -->
 <section class="panel" id="verify">
@@ -65,10 +65,10 @@
   </div>
 </section>
 
-<section class="panel alt">
+<section class="panel">
   <div class="wrap">
     <h2>Market</h2>
-    <div class="stats">
+    <div class="statgrid">
       <div class="stat"><span class="k">Price</span><span class="v" id="m-price">—</span></div>
       <div class="stat"><span class="k">Market cap</span><span class="v" id="m-mcap">—</span></div>
       <div class="stat"><span class="k">Volume 24h</span><span class="v" id="m-vol">—</span></div>
@@ -81,7 +81,7 @@
 <section class="panel">
   <div class="wrap">
     <h2>The vault</h2>
-    <div class="stats">
+    <div class="statgrid">
       <div class="stat"><span class="k">Awaiting payout</span><span class="v" id="v-bal">—</span></div>
       <div class="stat"><span class="k">Paid out</span><span class="v" id="v-paid">—</span></div>
       <div class="stat"><span class="k">Payouts</span><span class="v" id="v-count">—</span></div>
@@ -91,7 +91,7 @@
 
     <h3 style="margin-top:28px">Payout history</h3>
     <ul class="log" id="v-log"><li class="idle">Reading payout events from chain…</li></ul>
-    <p class="fine">Payouts take about 6.36 days — the challenge period on the chain's own bridge,
+    <p class="fine">Payouts take about 6 days — the challenge period on the chain's own bridge,
     which depends on nothing but the rollup. It is the vault's only exit, and anyone can trigger it,
     so a payout is never stuck waiting on us.</p>
   </div>
@@ -105,7 +105,7 @@
   </div>
 </footer>
 
-<script src="config.js?v=21"></script>
-<script src="campaign.js?v=3"></script>
+<script src="config.js?v=24"></script>
+<script src="campaign.js?v=4"></script>
 </body>
 </html>

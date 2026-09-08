@@ -8,104 +8,149 @@
 */
 (() => {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const $ = (id) => document.getElementById(id);
 
-  /* ---------------- the live ticker ----------------
-     A band of what the chain actually says, so the first thing a visitor
-     sees moving is evidence rather than marketing. Facts about the
-     mechanism are mixed in so the band is never empty on a quiet day —
-     they are labelled differently from the on-chain items, because one
-     kind is a reading and the other is a claim. */
-  const track = document.getElementById("tick-track");
-  const items = [];
+  /* ---------------- the hero tile ----------------
+     One real campaign. The launchpad's whole claim is that fees can only
+     reach the charity, and a live vault holding fees for a named charity is
+     that claim as an object rather than a sentence. */
+  const heroTile = (list) => {
+    const box = $("hero-campaign");
+    if (!box) return;
+    const c = (list || []).find((x) => x && x.charity) || (list || [])[0];
+    if (!c) {
+      box.innerHTML = '<p class="hp-wait">No campaign launched yet.</p>';
+      return;
+    }
+    const held = typeof c.held === "bigint" || typeof c.held === "number"
+      ? (Number(c.held) / 1e18).toFixed(4)
+      : null;
+    box.innerHTML =
+      '<div class="hp-row"><span class="hp-tok">$' + c.sym + '</span>' +
+      '<span class="hp-arrow">&rarr;</span>' +
+      '<span class="hp-cha">' + (c.charity ? c.charity.short : "charity " + c.cid) + '</span></div>' +
+      (held !== null
+        ? '<div class="hp-amt">' + held + ' ETH<span>held in its vault</span></div>' : "") +
+      '<div class="hp-note">The vault has no function that pays anyone else. Not the ' +
+      'launcher, not us.</div>' +
+      '<a class="hp-open" href="campaign.html?t=' + c.token + '">Open this campaign &rsaquo;</a>';
+  };
 
-  const FACTS = [
-    "0.7% of a campaign's volume reaches its charity",
-    "0% taken by us — no fee parameter exists",
-    "5 charities, fixed in the contract",
-    "payouts settle in ~6.36 days",
-    "no owner · no withdraw · no upgrade",
-  ];
+  /* ---------------- the campaign marquee ----------------
+     A drifting row of every live campaign. The row is duplicated so the
+     translate can loop seamlessly; the copy is hidden from screen readers so
+     the list is not announced twice. Hidden entirely when there is nothing
+     to show — an empty rail that scrolls is worse than no rail. */
+  const marquee = (list) => {
+    const rail = $("camp-pills"), box = $("camp-marquee");
+    if (!rail || !box) return;
+    const live = (list || []).filter((c) => c && c.sym);
+    if (!live.length) { box.hidden = true; return; }
 
-  const paint = () => {
-    if (!track) return;
-    const live = items.slice(0, 14);
-    const cells = live.concat(FACTS.map((f) => ({ fact: f })));
-    if (!cells.length) return;
+    const one = live.map((c) => {
+      const held = typeof c.held === "bigint" || typeof c.held === "number"
+        ? (Number(c.held) / 1e18).toFixed(4) + " ETH"
+        : "";
+      return '<a class="tpill" href="campaign.html?t=' + c.token + '">' +
+             '<b>$' + c.sym + '</b>' +
+             '<span class="px">' + (c.charity ? c.charity.short : "charity " + c.cid) + '</span>' +
+             (held ? '<span class="kind">' + held + '</span>' : "") +
+             "</a>";
+    }).join("");
 
-    const html = cells.map((c) => c.fact
-      ? `<span class="tick-i is-fact">${c.fact}</span>`
-      : `<span class="tick-i"><b>${c.label}</b>${c.value ? `<em>${c.value}</em>` : ""}</span>`
-    ).join("");
-
-    // Duplicated so the loop has something to scroll into. aria-hidden on the
-    // copy keeps a screen reader from reading everything twice.
-    track.innerHTML = `<div class="tick-run">${html}</div>` +
-                      `<div class="tick-run" aria-hidden="true">${html}</div>`;
-    document.getElementById("ticker")?.classList.add("ready");
+    // A short list would finish its travel and leave a gap. Repeat it until
+    // one run is wide enough to cover the rail before the loop restarts.
+    const reps = Math.max(2, Math.ceil(8 / live.length) * 2);
+    rail.innerHTML = new Array(reps).fill(one).join("");
+    box.hidden = false;
   };
 
   document.addEventListener("hh:campaigns", (e) => {
-    for (const c of e.detail || []) {
-      items.push({ label: `$${c.sym} launched`, value: c.charity ? `→ ${c.charity.short}` : "" });
-    }
-    paint();
+    heroTile(e.detail);
+    marquee(e.detail);
   });
 
-  document.addEventListener("hh:ledger", (e) => {
-    for (const r of e.detail || []) {
-      items.push({ label: r.title, value: r.kind === "done" ? "delivered" : "in transit" });
-    }
-    paint();
-  });
+  /* ---------------- the story ----------------
+     A sticky frame the page scrolls through. Progress through the section
+     lights the phrases one at a time and fills the bar underneath.
 
-  paint();   // facts alone until the chain answers
+     Below the breakpoint the section is a plain stack rather than a sticky
+     frame, so there is no scroll progress to read. There each card and phrase
+     is observed on its own and arrives as it comes into view — the point of
+     the section is that it is a sequence, and showing all three at once
+     throws that away. */
+  const story = $("story");
+  if (story) {
+    story.classList.add("js");        // hands the frames' visibility to us
+    const phrases = [...story.querySelectorAll(".story-copy p")];
+    const frames = [...story.querySelectorAll(".frame")];
+    const fill = $("storybar-fill");
+    const lightAll = () => {
+      phrases.forEach((p) => p.classList.add("on"));
+      frames.forEach((f) => f.classList.add("in"));
+      if (fill) fill.style.transform = "scaleX(1)";
+    };
 
-  /* ---------------- scroll reveal ----------------
-     Sections rise as they arrive. Anything not yet observed stays visible by
-     default, so a browser without IntersectionObserver shows a normal page
-     rather than a blank one. */
-  if (!reduced.matches && "IntersectionObserver" in window) {
-    const targets = document.querySelectorAll(
-      ".panel .wrap > h2, .panel .wrap > .sub, .panel .wrap > .sec-head, .grid, .cards," +
-      ".diagram, .ledger, .proof, .steps, .limits, .chartwrap, .launchcard");
-    const io = new IntersectionObserver((entries) => {
-      for (const en of entries) {
-        if (!en.isIntersecting) continue;
-        en.target.classList.add("in");
-        io.unobserve(en.target);
-      }
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+    /* The stacked path: one observer, each element revealed as it arrives. */
+    let io = null;
+    const stacked = () => {
+      if (io || !("IntersectionObserver" in window)) { if (!io) lightAll(); return; }
+      io = new IntersectionObserver((entries) => {
+        // Two cards often cross the line in the same batch. Without a stagger
+        // they pop together, which reads as "two at once" rather than as the
+        // sequence the section is trying to tell.
+        let k = 0;
+        for (const en of entries) {
+          if (!en.isIntersecting) continue;
+          const el = en.target;
+          el.style.transitionDelay = k++ * 130 + "ms";
+          el.classList.add(el.classList.contains("frame") ? "in" : "on");
+          io.unobserve(el);
+        }
+      }, { rootMargin: "0px 0px -18% 0px", threshold: 0.25 });
+      [...phrases, ...frames].forEach((el) => io.observe(el));
+    };
+    const unstacked = () => { if (io) { io.disconnect(); io = null; } };
 
-    targets.forEach((t, i) => {
-      t.classList.add("reveal");
-      t.style.setProperty("--d", Math.min(i % 4, 3) * 55 + "ms");
-      io.observe(t);
-    });
-  }
-
-  /* ---------------- cursor spotlight ----------------
-     A faint light that follows the pointer. Pointer-only: on a touch screen
-     there is no cursor to follow, and a stuck highlight looks like a defect. */
-  if (window.matchMedia("(pointer: fine)").matches && !reduced.matches) {
-    const spot = document.createElement("div");
-    spot.className = "spotlight";
-    spot.setAttribute("aria-hidden", "true");
-    document.body.appendChild(spot);
-    let x = 0, y = 0, queued = false;
-    window.addEventListener("pointermove", (e) => {
-      x = e.clientX; y = e.clientY;
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(() => {
+    if (reduced.matches) {
+      lightAll();
+    } else {
+      let queued = false;
+      const tick = () => {
         queued = false;
-        spot.style.transform = `translate3d(${x - 300}px, ${y - 300}px, 0)`;
-      });
-    }, { passive: true });
+        const stuck = getComputedStyle(story.querySelector(".story-sticky")).position === "sticky";
+        if (!stuck) { stacked(); return; }
+        unstacked();
+
+        const r = story.getBoundingClientRect();
+        const travel = r.height - window.innerHeight;
+        // 0 before the section pins, 1 once it has been scrolled through.
+        const p = travel <= 0 ? 1 : Math.min(Math.max(-r.top / travel, 0), 1);
+
+        if (fill) fill.style.transform = "scaleX(" + p.toFixed(4) + ")";
+        // Each phrase takes its share of the travel, and lights a little
+        // before its share begins so the first one is on as the frame pins.
+        phrases.forEach((el, i) => {
+          el.classList.toggle("on", p >= (i / phrases.length) * 0.92);
+        });
+        frames.forEach((el, i) => {
+          el.classList.toggle("in", p >= (i / frames.length) * 0.92);
+        });
+      };
+      const onScroll = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(tick);
+      };
+      addEventListener("scroll", onScroll, { passive: true });
+      addEventListener("resize", onScroll);
+      tick();
+    }
   }
 
   /* ---------------- stat count-up ----------------
-     The hero numbers arrive from chain some time after paint. When one lands,
-     it counts up to the value app.js wrote rather than snapping.
+     When a number arrives from chain it counts up to the value app.js wrote
+     rather than snapping.
 
      It never invents a figure: the final frame writes back the exact string it
      was given, and anything that is not a plain number (an em dash, "—") is

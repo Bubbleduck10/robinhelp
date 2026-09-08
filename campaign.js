@@ -65,7 +65,6 @@
     return toStr(b.slice(128, 128 + len * 2)).trim();
   };
 
-  $("chain-chip").textContent = CONFIG.chainName;
   $("c-address").innerHTML =
     `Token <a href="${CONFIG.explorer}/address/${token}" target="_blank" rel="noopener">${token}</a>`;
 
