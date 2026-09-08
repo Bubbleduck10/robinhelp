@@ -94,6 +94,77 @@
     return ok;
   };
 
+  /* ---------------- the logo ----------------
+     pons stores a token logo as an ipfs:// CID — read off two launches made
+     through their own form, both of which carry ipfs://bafy... in this field.
+     So the file has to be pinned before the calldata is built, and the CID is
+     what goes on chain.
+
+     The pinning key lives behind CONFIG.pinEndpoint, never in the page. */
+  const MAX_LOGO = 2 * 1024 * 1024;
+  const LOGO_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+  let logoFile = null, logoCid = null;
+
+  const logoNote = (msg, bad) => {
+    const el = $("f-logo-hint");
+    el.textContent = msg;
+    el.className = "drop-note" + (bad ? " bad" : "");
+  };
+
+  const acceptLogo = (file) => {
+    if (!file) return;
+    if (!LOGO_TYPES.includes(file.type))
+      return logoNote("That is not a PNG, JPG, GIF or WebP.", true);
+    if (file.size > MAX_LOGO)
+      return logoNote("That image is " + (file.size / 1048576).toFixed(1) + " MB. The limit is 2 MB.", true);
+
+    logoFile = file; logoCid = null;          // a new file invalidates any old pin
+    const url = URL.createObjectURL(file);
+    const img = $("f-logo-preview");
+    img.src = url; img.hidden = false;
+    $("f-drop").classList.add("has");
+    $("f-logo-copy").innerHTML =
+      "<b>" + file.name.replace(/[<>&]/g, "") + "</b>" +
+      "<span>" + (file.size / 1024).toFixed(0) + " KB — click to replace</span>";
+    logoNote("Pinned to IPFS when you launch, then written into the coin.");
+  };
+
+  const drop = $("f-drop");
+  if (drop) {
+    const input = $("f-logo-input");
+    drop.addEventListener("click", () => input.click());
+    drop.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); }
+    });
+    input.addEventListener("change", () => acceptLogo(input.files && input.files[0]));
+    // Without preventDefault on dragover the browser simply opens the file.
+    ["dragenter", "dragover"].forEach((ev) =>
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+    ["dragleave", "drop"].forEach((ev) =>
+      drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+    drop.addEventListener("drop", (e) => {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      acceptLogo(f);
+    });
+  }
+
+  /* Pin, and insist on a CID back. A launch with a broken logo is permanent,
+     so a failed pin stops the launch rather than proceeding without one. */
+  const pinLogo = async () => {
+    if (logoCid) return logoCid;
+    if (!CONFIG.pinEndpoint) throw new Error("No pinning endpoint is configured.");
+    const body = new FormData();
+    body.append("file", logoFile, logoFile.name);
+    const r = await fetch(CONFIG.pinEndpoint, { method: "POST", body });
+    if (!r.ok) throw new Error("Pinning failed (" + r.status + ").");
+    const j = await r.json().catch(() => ({}));
+    const cid = j.cid || j.Hash || j.IpfsHash || "";
+    if (!/^(bafy|bafk|Qm)[1-9A-Za-z]{20,}$/.test(cid))
+      throw new Error("Pinning returned no usable CID.");
+    logoCid = cid;
+    return cid;
+  };
+
   /* ---------------- chain + wallet ---------------- */
   const CHAIN_HEX = "0x" + CONFIG.chainId.toString(16);
   const CHAIN_PARAMS = {
@@ -275,6 +346,8 @@
     if (!/^[A-Z0-9]{2,10}$/.test(symbol))
       return status("Ticker must be 2–10 letters or numbers.", "bad");
     if (!CONFIG.factory) return status("Launchpad address not configured.", "bad");
+    if (!logoFile) { logoNote("Pick a logo — every coin needs one.", true);
+      return status("Add a logo before launching.", "bad"); }
 
     const eth = window.ethereum;
     if (!eth) return status("No wallet found. Install a browser wallet and reload.", "bad");
@@ -289,6 +362,9 @@
       status("Switching to " + CONFIG.chainName + "…");
       await ensureChain(eth);
 
+      status("Pinning the logo to IPFS…");
+      const cid = await pinLogo();
+
       const salt = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
         .map((b) => b.toString(16).padStart(2, "0")).join("");
 
@@ -296,7 +372,7 @@
       // anywhere the token is listed, not only on this site.
       const picked = CONFIG.charities.find((c) => c.id === Number(sel.value));
       const data = encodeLaunch({
-        name, symbol, logo: "",
+        name, symbol, logo: "ipfs://" + cid,
         description: $("f-desc").value.trim(),
         twitter: $("f-x").value.trim(),
         website: picked ? picked.url : "",

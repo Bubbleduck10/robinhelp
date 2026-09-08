@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=31">
+<link rel="stylesheet" href="style.css?v=32">
 </head>
 <body class="motion">
 
@@ -390,6 +390,22 @@
       </div>
 
       <div class="fi">
+        <label for="f-logo-input">Logo</label>
+        <!-- pons stores a token logo as an ipfs:// CID, so the file is pinned
+             before the launch is built and the CID goes into the calldata. -->
+        <div class="drop" id="f-drop" tabindex="0" role="button"
+             aria-describedby="f-logo-hint">
+          <input id="f-logo-input" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+          <img id="f-logo-preview" alt="" hidden>
+          <div class="drop-copy" id="f-logo-copy">
+            <b>Drop an image here</b>
+            <span>or click to choose &mdash; PNG, JPG, GIF or WebP, up to 2&nbsp;MB</span>
+          </div>
+        </div>
+        <p class="drop-note" id="f-logo-hint">Required. Pinned to IPFS and written into the coin, so it shows anywhere the token is listed.</p>
+      </div>
+
+      <div class="fi">
         <label for="f-desc">Description <span class="opt">optional</span></label>
         <input id="f-desc" type="text" maxlength="120" placeholder="What is this coin for?" autocomplete="off">
       </div>
@@ -466,9 +482,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=25"></script>
+<script src="config.js?v=27"></script>
 <script src="app.js?v=30"></script>
 <script src="polish.js?v=5" defer></script>
-<script src="launch.js?v=4"></script>
+<script src="launch.js?v=5"></script>
 </body>
 </html>

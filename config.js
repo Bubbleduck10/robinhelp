@@ -67,6 +67,16 @@ const CONFIG = {
   // Left off the site, not removed from chain — the launchpad has no function
   // to delete a campaign and these two still exist and still route their fees
   // to St. Jude. Both were test launches from before the Hood Helper rebrand.
+  // Written into launched tokens as their website, so it lands in immutable
+  // metadata. It must be the domain we intend to keep.
+  site: "https://hoodhelper.xyz",
+
+  // Where the launch form POSTs a logo to get an ipfs:// CID back. The pinning
+  // credential lives at the far end of this, never in the page. Empty means
+  // launches are blocked, which is deliberate: pons writes the CID into the
+  // token permanently, so a launch with no logo cannot be corrected later.
+  pinEndpoint: "https://hoodhelper-pin.notejet.workers.dev",
+
   hiddenCampaigns: [
     "0xd61b931848642fe1f4e9772890a918988437533b",   // $TEST
     "0x004300f38e3ddb56abbdb19478c8d8fe1875c142",   // $STJUDE
