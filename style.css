@@ -677,3 +677,12 @@ footer a:hover { color: var(--black); }
      wide screen; on a phone it only adds a break the text then wraps past. */
   .br-wide { display: none; }
 }
+
+/* The buy step -----------------------------------------------------------
+   Revealed after a launch confirms. Set apart from the form above it by a
+   rule rather than a tint, like every other division on the page. */
+.buystep { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line); max-width: 640px; }
+.buystep .sub { margin-top: 12px; }
+.buyrow { display: flex; align-items: flex-end; gap: 14px; margin-top: 22px; flex-wrap: wrap; }
+.buyrow .fi { margin-bottom: 0; flex: 1 1 220px; }
+.buyquote { margin-top: 12px; font-size: 14px; color: var(--grey); font-family: var(--mono); }

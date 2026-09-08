@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=30">
+<link rel="stylesheet" href="style.css?v=31">
 </head>
 <body class="motion">
 
@@ -414,6 +414,29 @@
       <button class="btn go" id="l-go" type="submit">Connect wallet &amp; launch</button>
       <p class="lstatus" id="l-status"></p>
     </form>
+
+    <!-- Shown only after a launch confirms. A dev buy cannot be part of the
+         launch itself: pons reverts on any payment that is not exactly the fee,
+         and tokens bought during the launch would be credited to the vault,
+         which has no way to send them anywhere. -->
+    <div class="buystep" id="buystep" hidden>
+      <h3>Buy some of <span id="b-sym">your coin</span></h3>
+      <p class="sub tight">This is an ordinary trade from your own wallet, so the tokens
+      are yours. It could not have been folded into the launch — the protocol rejects any
+      payment that is not exactly the 0.0005 ETH fee, and a buy made during the launch
+      would be credited to the campaign vault, which has no function to send tokens
+      anywhere. It pays the same 1% fee as any other trade, so 0.7% of it reaches the
+      charity: your own buy makes the first donation.</p>
+      <div class="buyrow">
+        <div class="fi">
+          <label for="b-amt">Amount in ETH</label>
+          <input id="b-amt" type="text" inputmode="decimal" placeholder="0.05" autocomplete="off">
+        </div>
+        <button class="btn go" id="b-go" type="button">Buy</button>
+      </div>
+      <p class="buyquote" id="b-quote"></p>
+      <p class="lstatus" id="b-status"></p>
+    </div>
   </div>
 </section>
 
@@ -442,6 +465,6 @@
 <script src="config.js?v=25"></script>
 <script src="app.js?v=30"></script>
 <script src="polish.js?v=5" defer></script>
-<script src="launch.js?v=1"></script>
+<script src="launch.js?v=2"></script>
 </body>
 </html>

@@ -128,6 +128,134 @@
   });
 
   /* ---------------- submit ---------------- */
+
+  /* ---------------- the buy step ----------------
+     A dev buy cannot ride along with the launch. pons reverts unless msg.value
+     is exactly the launch fee — one wei over and it is LaunchFeeNotPaid — and
+     even if it accepted more, the caller of launchToken is the campaign vault,
+     so the tokens would land there. The vault can only bridge ETH to its
+     charity; it has no transfer or approve, so tokens sent to it are stuck for
+     good. So the buy is a separate, ordinary trade from the launcher's own
+     wallet, which is also the honest version: it pays the same 1% fee everyone
+     pays, and 0.7% of it reaches the charity. */
+
+  const BUY_SEL   = "0x59a87bc1";   // buy(uint256,uint256,address)
+  const CURVE_SEL = "0x7165485d";   // curve()
+  const SLIPPAGE_BPS = 500n;        // 5%, against a sandwich on a fresh curve
+
+  const rpcCall = async (method, params) => {
+    const r = await fetch(CONFIG.rpc, {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    });
+    const j = await r.json();
+    if (j.error) throw new Error(j.error.message);
+    return j.result;
+  };
+
+  /* Poll for the receipt and pull the campaign out of its own logs, rather
+     than re-reading the factory: the log is the authoritative record of what
+     this transaction created. */
+  const waitForCampaign = async (eth, hash) => {
+    const TOPIC = "0xcea37bc2e454d11f3881906d399c2945470501e5caddeb5fd84e3c4c0088c771";
+    for (let i = 0; i < 45; i++) {
+      const r = await rpcCall("eth_getTransactionReceipt", [hash]).catch(() => null);
+      if (r) {
+        if (r.status === "0x0") throw new Error("reverted");
+        const log = (r.logs || []).find((l) =>
+          l.address.toLowerCase() === CONFIG.factory.toLowerCase() &&
+          (l.topics || [])[0] === TOPIC);
+        if (!log) throw new Error("no CampaignLaunched log");
+        return { token: "0x" + log.topics[1].slice(26), vault: "0x" + log.topics[2].slice(26) };
+      }
+      await new Promise((s2) => setTimeout(s2, 2000));
+    }
+    throw new Error("timed out waiting for the receipt");
+  };
+
+  const parseEth = (v) => {
+    if (!/^d*.?d*$/.test(v) || v === "" || v === ".") return null;
+    const [w, f = ""] = v.split(".");
+    if (f.length > 18) return null;
+    return BigInt(w || "0") * 10n ** 18n + BigInt((f + "0".repeat(18)).slice(0, 18));
+  };
+  const fmtUnits = (v, dp = 4) => {
+    const base = 10n ** 18n;
+    const frac = ((v % base) * 10n ** BigInt(dp)) / base;
+    return (v / base).toLocaleString() + "." + frac.toString().padStart(dp, "0");
+  };
+
+  const openBuyStep = (eth, from, token, vault, symbol) => {
+    const box = $("buystep"); if (!box) return;
+    $("l-status").innerHTML = $("l-status").innerHTML.replace(
+      "Waiting for the chain to confirm…", "Confirmed on chain.");
+    $("b-sym").textContent = "$" + symbol;
+    box.hidden = false;
+
+    const bstat = (m, kind) => {
+      const el = $("b-status"); el.textContent = m; el.className = "lstatus " + (kind || "");
+    };
+    let curve = null;
+    const getCurve = async () => {
+      if (curve) return curve;
+      const r = await rpcCall("eth_call", [{ to: vault, data: CURVE_SEL }, "latest"]);
+      curve = "0x" + r.slice(26);
+      return curve;
+    };
+    const encBuy = (amtIn, minOut, to) =>
+      BUY_SEL + encUint(amtIn) + encUint(minOut) + encAddr(to);
+
+    // Quote by simulating the real call, so the number shown is the number the
+    // curve would actually return rather than a formula we keep in step.
+    const quote = async (amtIn) => {
+      const c = await getCurve();
+      const out = await rpcCall("eth_call", [
+        { from, to: c, data: encBuy(amtIn, 0n, from), value: "0x" + amtIn.toString(16) },
+        "latest",
+      ]);
+      return BigInt(out);
+    };
+
+    let timer;
+    $("b-amt").addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const amt = parseEth($("b-amt").value.trim());
+        if (!amt || amt <= 0n) { $("b-quote").textContent = ""; return; }
+        try {
+          const out = await quote(amt);
+          $("b-quote").textContent =
+            "≈ " + fmtUnits(out, 2) + " " + symbol + "  ·  min " +
+            fmtUnits(out - (out * SLIPPAGE_BPS) / 10000n, 2) + " after 5% slippage";
+        } catch { $("b-quote").textContent = "Could not quote that amount."; }
+      }, 350);
+    });
+
+    $("b-go").addEventListener("click", async () => {
+      const amt = parseEth($("b-amt").value.trim());
+      if (!amt || amt <= 0n) return bstat("Enter an amount in ETH.", "err");
+      try {
+        const c = await getCurve();
+        bstat("Quoting…");
+        const out = await quote(amt);
+        const minOut = out - (out * SLIPPAGE_BPS) / 10000n;
+        bstat("Confirm in your wallet — " + fmtUnits(amt) + " ETH plus gas.");
+        const hash = await eth.request({
+          method: "eth_sendTransaction",
+          params: [{ from, to: c, data: encBuy(amt, minOut, from),
+                     value: "0x" + amt.toString(16) }],
+        });
+        $("b-status").innerHTML =
+          "Bought " + fmtUnits(out, 2) + " " + symbol + " — " +
+          '<a href="' + CONFIG.explorer + "/tx/" + hash + '" target="_blank" rel="noopener">view transaction ›</a>';
+        $("b-status").className = "lstatus ok";
+      } catch (err) {
+        const m = (err && (err.message || err.toString())) || "unknown error";
+        bstat(/user rejected|denied/i.test(m) ? "Cancelled in wallet." : "Failed: " + m.slice(0, 160), "err");
+      }
+    });
+  };
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -175,8 +303,19 @@
       $("l-status").innerHTML =
         `Launched. $${symbol} is now paired to ${charity ? charity.short : "its charity"} ` +
         `— <a href="${CONFIG.explorer}/tx/${hash}" target="_blank" rel="noopener">view transaction ›</a>. ` +
-        `It will appear in Campaigns once the chain confirms.`;
+        `Waiting for the chain to confirm…`;
       $("l-status").className = "lstatus ok";
+
+      // The buy step needs the token address, which only exists once the
+      // transaction is mined. Failing to find it is not a launch failure —
+      // the coin is live either way, so this only hides the buy panel.
+      try {
+        const { token, vault } = await waitForCampaign(eth, hash);
+        openBuyStep(eth, from, token, vault, symbol);
+      } catch (e) {
+        $("l-status").innerHTML +=
+          ` <br>It will appear in Campaigns once the chain confirms.`;
+      }
     } catch (err) {
       const m = (err && (err.message || err.toString())) || "unknown error";
       status(/user rejected|denied/i.test(m) ? "Cancelled in wallet." : "Failed: " + m.slice(0, 160), "bad");
