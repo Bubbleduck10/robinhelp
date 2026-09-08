@@ -300,8 +300,12 @@
       const { logs, head, secondsPerBlock } = await getLogs(
         CONFIG.rpc, CONFIG.factory, [TOPIC.campaignLaunched],
         [CONFIG.logsWindow, ...CONFIG.logsFallbacks], CONFIG.secondsPerBlock);
+      // Launches come straight from the factory, so a hidden campaign has to
+      // be filtered here too or it reappears in the ledger as "$? launched".
+      const hiddenL = (CONFIG.hiddenCampaigns || []).map((a) => a.toLowerCase());
       for (const l of logs) {
         const token = "0x" + (l.topics[1] || "").slice(26);
+        if (hiddenL.includes(token.toLowerCase())) continue;
         const c = campaignCache.find((x) => x.token.toLowerCase() === token.toLowerCase());
         rows.push({
           kind: "launch", amount: null,

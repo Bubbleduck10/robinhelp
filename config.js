@@ -64,7 +64,13 @@ const CONFIG = {
   // deployed. Listing a campaign is not an endorsement of it — anyone can
   // launch one, and hiding the ones we did not like would make the list a
   // curated feed rather than a reading of the contract.
-  hiddenCampaigns: [],
+  // Left off the site, not removed from chain — the launchpad has no function
+  // to delete a campaign and these two still exist and still route their fees
+  // to St. Jude. Both were test launches from before the Hood Helper rebrand.
+  hiddenCampaigns: [
+    "0xd61b931848642fe1f4e9772890a918988437533b",   // $TEST
+    "0x004300f38e3ddb56abbdb19478c8d8fe1875c142",   // $STJUDE
+  ],
 
   // A campaign donates roughly this share of its trading volume: pons charges
   // 1% and keeps 30% of that, so the creator share is 0.7%. We take none of it.
