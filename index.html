@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="style.css?v=38">
 </head>
 <body class="motion">
 
@@ -25,7 +25,6 @@
     <nav class="nav">
       <a href="#how">How it works</a>
       <a href="#campaigns">Campaigns</a>
-      <a href="#token">$charity</a>
       <a href="https://x.com/hoodhelperrh" target="_blank" rel="noopener">@hoodhelperrh</a>
       <a href="#launch" class="btn">Launch a coin</a>
     </nav>
@@ -153,39 +152,6 @@
 
     <div id="campaign-list" class="cards">
       <p class="empty">No campaigns yet. The first one launched will appear here, read live from chain.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============ the project token ============ -->
-<section class="panel" id="token">
-  <div class="wrap">
-    <div class="sec-head">
-      <div>
-        <h2>$<span id="t-sym">charity</span></h2>
-        <p class="sub tight">The project's own token, launched separately from the launchpad. Its
-        creator fees fund Hood Helper itself — the audit, the launch form, hosting, and the work to
-        add more charities and more chains. They do not go to a charity, and we would rather say
-        that plainly than let it blur into the campaigns above.</p>
-        <p class="sub tight" id="t-fee"></p>
-      </div>
-      <a id="t-buy" class="btn ghost sm" target="_blank" rel="noopener" hidden>Trade</a>
-    </div>
-
-    <div class="chartwrap">
-      <div class="chart-head">
-        <div>
-          <span class="price" id="t-price">—</span>
-          <span class="delta" id="t-delta"></span>
-        </div>
-        <div class="chart-meta">
-          <span><b id="t-mcap">—</b> <span id="t-mcap-label">mcap</span></span>
-          <span><b id="t-vol">—</b> 24h vol</span>
-        </div>
-      </div>
-      <div class="chart" id="t-chart">
-        <p class="chart-empty" id="t-empty">Not launched yet. When it is, the chart draws itself from chain data.</p>
-      </div>
     </div>
   </div>
 </section>
@@ -482,8 +448,8 @@
   </div>
 </footer>
 
-<script src="config.js?v=31"></script>
-<script src="app.js?v=32"></script>
+<script src="config.js?v=32"></script>
+<script src="app.js?v=33"></script>
 <script src="polish.js?v=6" defer></script>
 <script src="launch.js?v=6"></script>
 </body>

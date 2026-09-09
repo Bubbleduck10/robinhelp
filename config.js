@@ -40,21 +40,6 @@ const CONFIG = {
   // Rollup facts, used for the honest "in transit" copy.
   challengePeriodDays: 6,
 
-  // ---- the project's own token ----
-  // Launched separately from AD4c, not through the launchpad: its fees are the
-  // project's, not a charity's. Left empty until it exists — the panel then says
-  // so rather than showing a chart of nothing.
-  mainToken: {
-    symbol: "Charity",
-    address: "0x7b45c07aad59044256aa147e70adc61d54a88667",
-    launched: true,
-    // Set both of these from the new launch. The retired $Helping token had a
-    // 2% total fee — 1% curve, 1% creator tax — because the pons form defaults
-    // creator tax to 1%. Watch for that again: it is immutable, and it has
-    // caught every launch so far.
-    tradeFeeNote: "3% per trade — 1% curve fee, 2% creator tax. Fixed at launch.",
-  },
-
   // Campaigns the site does not list. The factory's `campaigns` array is
   // append-only and its entries are immutable, so a launch that should not be
   // promoted can only be filtered here — it still exists on chain, and anyone

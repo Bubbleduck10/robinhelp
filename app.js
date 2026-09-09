@@ -75,13 +75,6 @@
     const frac = ((v % base) * 10n ** BigInt(dp)) / base;
     return (v / base).toLocaleString() + "." + frac.toString().padStart(dp, "0");
   };
-  const usdish = (n) => {
-    if (n == null || isNaN(n)) return "—";
-    if (n >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
-    if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
-    if (n >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K";
-    return "$" + n.toFixed(2);
-  };
   const ago = (secs) => {
     if (secs < 90) return Math.max(1, Math.round(secs)) + "s ago";
     if (secs < 5400) return Math.round(secs / 60) + "m ago";
@@ -119,8 +112,6 @@
 
   /* ---------------- static bits ---------------- */
   $("lim-days").textContent = CONFIG.challengePeriodDays;
-  $("t-sym").textContent = CONFIG.mainToken.symbol;
-  if (CONFIG.mainToken.tradeFeeNote) $("t-fee").textContent = CONFIG.mainToken.tradeFeeNote;
   $("contracts").innerHTML = CONFIG.factory
     ? ` · Launchpad <a href="${CONFIG.explorer}/address/${CONFIG.factory}" target="_blank" rel="noopener">${short(CONFIG.factory)}</a>`
     : "";
@@ -364,144 +355,10 @@
     document.dispatchEvent(new CustomEvent("hh:ledger", { detail: rows }));
   };
 
-  /* ---------------- the project token ---------------- */
-  const drawChart = (points) => {
-    const w = 1000, h = 220, pad = 10;
-    const lo = Math.min(...points), hi = Math.max(...points);
-    const span = hi - lo || 1;
-    const x = (i) => (i / (points.length - 1)) * w;
-    const y = (v) => pad + (1 - (v - lo) / span) * (h - pad * 2);
-    const line = points.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
-    const area = `${line}L${w},${h}L0,${h}Z`;
-    const up = points[points.length - 1] >= points[0];
-    const col = up ? "#00c805" : "#ff5f56";
-    $("t-chart").innerHTML =
-      `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="price chart">
-         <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-           <stop offset="0%" stop-color="${col}" stop-opacity=".28"/>
-           <stop offset="100%" stop-color="${col}" stop-opacity="0"/>
-         </linearGradient></defs>
-         <path d="${area}" fill="url(#g)"/>
-         <path d="${line}" fill="none" stroke="${col}" stroke-width="2.5"
-               stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-       </svg>`;
-  };
-
-  /* The chart is embedded rather than drawn.
-
-     GeckoTerminal serves this pool's price and volume but returns zero OHLCV
-     candles at every timeframe, so there is nothing to plot from. The curve's
-     own trade events could be decoded instead, but the two event shapes gave
-     prices 3.4x apart on adjacent trades, which means the field layout is not
-     what it looks like — and a wrong price on this site is worse than no
-     chart. So the chart is theirs, openly, and every number beside it is
-     still read from chain. */
-  const embedChart = (pair, pool) => {
-    const src = pair
-      ? `https://dexscreener.com/${CONFIG.chain}/${pair}?embed=1&theme=light&info=0&trades=0`
-      : (pool ? `https://www.geckoterminal.com/${CONFIG.gtNetwork}/pools/${pool}?embed=1&info=0&swaps=0` : "");
-    if (!src) return false;
-    const box = $("t-chart");
-    box.innerHTML =
-      `<iframe class="chart-embed" src="${src}" title="Price chart" loading="lazy"` +
-      ` referrerpolicy="no-referrer"></iframe>`;
-    return true;
-  };
-
-  let dexPair = "";
-
-  const loadToken = async () => {
-    const t = CONFIG.mainToken;
-    if (!t.address) return;                 // panel keeps its honest empty state
-    // It is launched now, so the empty state must stop saying it isn't. The
-    // chart still needs trades before it can draw anything.
-    $("t-empty").textContent = "Launched. Loading the chart…";
-    $("t-buy").hidden = false;
-    $("t-buy").href = `https://dexscreener.com/${CONFIG.chain}/${t.address}`;
-
-    try {
-      const d = await (await fetch("https://api.dexscreener.com/latest/dex/tokens/" + t.address)).json();
-      const pairs = (d.pairs || []).filter((p) => p.chainId === CONFIG.chain);
-      if (pairs.length) {
-        const p = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
-        dexPair = p.pairAddress || "";
-        const price = +p.priceUsd;
-        $("t-price").textContent = price >= 1 ? "$" + price.toFixed(4) : "$" + price.toPrecision(4);
-        $("t-mcap").textContent = usdish(p.marketCap);
-        $("t-vol").textContent = usdish(p.volume?.h24);
-        const ch = p.priceChange?.h24;
-        if (ch != null) {
-          $("t-delta").textContent = (ch >= 0 ? "+" : "") + ch.toFixed(2) + "% 24h";
-          $("t-delta").className = "delta " + (ch >= 0 ? "up" : "down");
-        }
-      }
-    } catch { /* leave the dashes */ }
-
-    // GeckoTerminal, for the chart and — when DexScreener has not indexed the
-    // token yet — for the numbers above it too. A freshly launched token is
-    // exactly the case DexScreener is slowest on, which is when the panel most
-    // needs to say something truthful, so this one response fills both.
-    try {
-      const pools = await (await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/tokens/${t.address}/pools`)).json();
-      const a = pools?.data?.[0]?.attributes;
-      const pool = a?.address;
-
-      if (a && $("t-price").textContent === "—") {
-        const price = Number(a.base_token_price_usd);
-        if (price > 0) {
-          $("t-price").textContent = price >= 1 ? "$" + price.toFixed(4) : "$" + price.toPrecision(4);
-        }
-        // market_cap_usd is null for a token this young, and fdv is what the
-        // number actually is, so the label says fdv rather than passing one
-        // off as the other.
-        const mcap = Number(a.market_cap_usd);
-        const fdv = Number(a.fdv_usd);
-        if (mcap > 0) {
-          $("t-mcap").textContent = usdish(mcap);
-        } else if (fdv > 0) {
-          $("t-mcap").textContent = usdish(fdv);
-          if ($("t-mcap-label")) $("t-mcap-label").textContent = "fdv";
-        }
-        const vol = Number(a.volume_usd?.h24);
-        if (vol > 0) $("t-vol").textContent = usdish(vol);
-        const ch = Number(a.price_change_percentage?.h24);
-        if (isFinite(ch)) {
-          $("t-delta").textContent = (ch >= 0 ? "+" : "") + ch.toFixed(2) + "% 24h";
-          $("t-delta").className = "delta " + (ch >= 0 ? "up" : "down");
-        }
-      }
-
-      // Prefer drawing it ourselves when candles exist; fall back to the
-      // embed when they do not, which is the case on a young pool here.
-      let drawn = false;
-      if (pool) {
-        try {
-          const o = await (await fetch(
-            `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/pools/${pool}/ohlcv/hour?limit=72`)).json();
-          const list = o?.data?.attributes?.ohlcv_list || [];
-          const closes = list.map((c) => Number(c[4])).filter((v) => v > 0).reverse();
-          if (closes.length > 2) { drawChart(closes); drawn = true; }
-        } catch { /* fall through to the embed */ }
-      }
-      if (!drawn) drawn = embedChart(dexPair, pool);
-      if (!drawn) {
-        $("t-empty").textContent =
-          "Launched. No chart source has indexed this pool yet — the numbers above are live.";
-      }
-    } catch {
-      if (!embedChart(dexPair, "")) {
-        $("t-empty").textContent =
-          "Launched. No chart source has indexed this pool yet — the numbers above are live.";
-      }
-    }
-  };
-
   /* ---------------- go ---------------- */
   const refresh = async () => {
     await loadCampaigns();
     await loadLedger();
-    await loadToken();
   };
   refresh();
   setInterval(refresh, CONFIG.pollMs);
