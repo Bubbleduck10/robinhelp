@@ -733,13 +733,13 @@ footer a:hover { color: var(--black); }
 /* The token chart is an embed when no candles exist to draw from — see the
    comment in app.js.
 
-   DexScreener ignores theme=light, so the embed arrives dark whatever we ask
-   for. Rather than fight it, the panel goes dark around it and picks up the
-   same near-black and radius the hero tile uses, so it reads as one of the
-   site's dark cards rather than a foreign object dropped into a white page. */
+   The embed honours theme=light, so the panel stays white and only clips the
+   iframe to the wrap's radius. An earlier version painted it near-black after
+   one render came back dark; that was the theme param not having applied yet,
+   and the dark panel then showed as a flash before the chart painted. */
 .chart:has(.chart-embed) {
   padding: 0;
-  background: var(--card);
+  background: var(--white);
   border-radius: 0 0 19px 19px;
   overflow: hidden;
   height: auto;
