@@ -387,12 +387,35 @@
        </svg>`;
   };
 
+  /* The chart is embedded rather than drawn.
+
+     GeckoTerminal serves this pool's price and volume but returns zero OHLCV
+     candles at every timeframe, so there is nothing to plot from. The curve's
+     own trade events could be decoded instead, but the two event shapes gave
+     prices 3.4x apart on adjacent trades, which means the field layout is not
+     what it looks like — and a wrong price on this site is worse than no
+     chart. So the chart is theirs, openly, and every number beside it is
+     still read from chain. */
+  const embedChart = (pair, pool) => {
+    const src = pair
+      ? `https://dexscreener.com/${CONFIG.chain}/${pair}?embed=1&theme=light&info=0&trades=0`
+      : (pool ? `https://www.geckoterminal.com/${CONFIG.gtNetwork}/pools/${pool}?embed=1&info=0&swaps=0` : "");
+    if (!src) return false;
+    const box = $("t-chart");
+    box.innerHTML =
+      `<iframe class="chart-embed" src="${src}" title="Price chart" loading="lazy"` +
+      ` referrerpolicy="no-referrer"></iframe>`;
+    return true;
+  };
+
+  let dexPair = "";
+
   const loadToken = async () => {
     const t = CONFIG.mainToken;
     if (!t.address) return;                 // panel keeps its honest empty state
     // It is launched now, so the empty state must stop saying it isn't. The
     // chart still needs trades before it can draw anything.
-    $("t-empty").textContent = "Launched. The chart draws itself once there are trades to plot.";
+    $("t-empty").textContent = "Launched. Loading the chart…";
     $("t-buy").hidden = false;
     $("t-buy").href = `https://dexscreener.com/${CONFIG.chain}/${t.address}`;
 
@@ -401,6 +424,7 @@
       const pairs = (d.pairs || []).filter((p) => p.chainId === CONFIG.chain);
       if (pairs.length) {
         const p = pairs.sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+        dexPair = p.pairAddress || "";
         const price = +p.priceUsd;
         $("t-price").textContent = price >= 1 ? "$" + price.toFixed(4) : "$" + price.toPrecision(4);
         $("t-mcap").textContent = usdish(p.marketCap);
@@ -448,13 +472,29 @@
         }
       }
 
-      if (!pool) return;
-      const o = await (await fetch(
-        `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/pools/${pool}/ohlcv/hour?limit=72`)).json();
-      const list = o?.data?.attributes?.ohlcv_list || [];
-      const closes = list.map((c) => Number(c[4])).filter((v) => v > 0).reverse();
-      if (closes.length > 2) { $("t-empty").remove(); drawChart(closes); }
-    } catch { /* chart stays empty; the price above still shows */ }
+      // Prefer drawing it ourselves when candles exist; fall back to the
+      // embed when they do not, which is the case on a young pool here.
+      let drawn = false;
+      if (pool) {
+        try {
+          const o = await (await fetch(
+            `https://api.geckoterminal.com/api/v2/networks/${CONFIG.gtNetwork}/pools/${pool}/ohlcv/hour?limit=72`)).json();
+          const list = o?.data?.attributes?.ohlcv_list || [];
+          const closes = list.map((c) => Number(c[4])).filter((v) => v > 0).reverse();
+          if (closes.length > 2) { drawChart(closes); drawn = true; }
+        } catch { /* fall through to the embed */ }
+      }
+      if (!drawn) drawn = embedChart(dexPair, pool);
+      if (!drawn) {
+        $("t-empty").textContent =
+          "Launched. No chart source has indexed this pool yet — the numbers above are live.";
+      }
+    } catch {
+      if (!embedChart(dexPair, "")) {
+        $("t-empty").textContent =
+          "Launched. No chart source has indexed this pool yet — the numbers above are live.";
+      }
+    }
   };
 
   /* ---------------- go ---------------- */
