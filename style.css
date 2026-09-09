@@ -731,6 +731,18 @@ footer a:hover { color: var(--black); }
 }
 
 /* The token chart is an embed when no candles exist to draw from — see the
-   comment in app.js. It fills the same box the drawn chart would. */
-.chart-embed { width: 100%; height: 100%; min-height: 260px; border: 0; display: block; }
-.chart { padding: 0; }
+   comment in app.js.
+
+   DexScreener ignores theme=light, so the embed arrives dark whatever we ask
+   for. Rather than fight it, the panel goes dark around it and picks up the
+   same near-black and radius the hero tile uses, so it reads as one of the
+   site's dark cards rather than a foreign object dropped into a white page. */
+.chart:has(.chart-embed) {
+  padding: 0;
+  background: var(--card);
+  border-radius: 0 0 19px 19px;
+  overflow: hidden;
+  height: auto;
+}
+.chart-embed { width: 100%; height: 380px; border: 0; display: block; }
+@media (max-width: 620px) { .chart-embed { height: 320px; } }
