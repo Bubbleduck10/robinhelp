@@ -40,6 +40,22 @@ const CONFIG = {
   // Rollup facts, used for the honest "in transit" copy.
   challengePeriodDays: 6,
 
+  // ---- the project's own token ----
+  // $Charity (0x7b45c07a…8667, deployer 0x91a19b3a…a185) was pulled from the
+  // site on 2026-09-08. Its address is deliberately NOT here — wiring a new
+  // one is `node script/wire-token.mjs 0x<address> <creatorTaxBps>`, which
+  // reads everything else from chain.
+  mainToken: {
+    symbol: "Charity",
+    address: "0x530694085c2c36c809bc453c08aa7908a44e1557",
+    launched: true,
+    // Set both of these from the new launch. The retired $Helping token had a
+    // 2% total fee — 1% curve, 1% creator tax — because the pons form defaults
+    // creator tax to 1%. Watch for that again: it is immutable, and it has
+    // caught every launch so far.
+    tradeFeeNote: "3% per trade — 1% curve fee, 2% creator tax. Fixed at launch.",
+  },
+
   // Campaigns the site does not list. The factory's `campaigns` array is
   // append-only and its entries are immutable, so a launch that should not be
   // promoted can only be filtered here — it still exists on chain, and anyone

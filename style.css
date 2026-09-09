@@ -476,6 +476,22 @@ body > footer { border-top: 1px solid var(--line); }
 .tpill .px { color: var(--grey); }
 .tpill .kind { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--grey-2); }
 
+/* Chart ---------------------------------------------------------------- */
+
+.chartwrap { margin-top: 32px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.chart-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; padding: 20px 22px; border-bottom: 1px solid var(--line);
+}
+.price { font-family: var(--display); font-weight: 600; font-size: 32px; letter-spacing: -.035em; }
+.delta { margin-left: 10px; font-size: 15px; font-weight: 600; }
+.delta.up { color: var(--up); }
+.delta.down { color: var(--down); }
+.chart-meta { display: flex; gap: 24px; font-size: 14px; color: var(--grey); }
+.chart-meta b { color: var(--black); font-weight: 600; }
+.chart { height: 260px; display: flex; align-items: center; justify-content: center; }
+.chart-empty { color: var(--grey-2); font-size: 15px; text-align: center; padding: 0 24px; }
+
 /* Diagram -------------------------------------------------------------- */
 
 .diagram { margin-top: 32px; border: 1px solid var(--line); border-radius: 20px; padding: 24px; overflow-x: auto; }
@@ -713,3 +729,20 @@ footer a:hover { color: var(--black); }
 @media (max-width: 620px) {
   .camp-logo { width: 56px; height: 56px; border-radius: 14px; }
 }
+
+/* The token chart is an embed when no candles exist to draw from — see the
+   comment in app.js.
+
+   The embed honours theme=light, so the panel stays white and only clips the
+   iframe to the wrap's radius. An earlier version painted it near-black after
+   one render came back dark; that was the theme param not having applied yet,
+   and the dark panel then showed as a flash before the chart painted. */
+.chart:has(.chart-embed) {
+  padding: 0;
+  background: var(--white);
+  border-radius: 0 0 19px 19px;
+  overflow: hidden;
+  height: auto;
+}
+.chart-embed { width: 100%; height: 380px; border: 0; display: block; }
+@media (max-width: 620px) { .chart-embed { height: 320px; } }
